@@ -1,0 +1,225 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{url}
+
+
+\title{Reconocimiento de Patrones (ML) - T01}
+\author{ALEJANDRO ZARATE MACIAS}
+\date{02 de Enero 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+En este trabajo se abordan distintos problemas de regresión lineal y polinomial aplicados al reconocimiento de patrones. Se utilizan tanto conjuntos de datos reales como funciones analíticas para analizar el comportamiento de los modelos de regresión bajo diferentes configuraciones. Se estudia el efecto del grado del polinomio, el número de iteraciones y la inclusión de regularización L1 y L2. Finalmente, se emplean curvas de aprendizaje para evaluar el desempeño de los modelos y analizar fenómenos de subajuste y sobreajuste.
+\end{abstract}
+
+
+% ========================================
+% SECCIÓN 1
+% ========================================
+\section{Problema 1}
+
+\subsection{Enunciado}
+
+Considere el conjunto de datos de \cite{kaggleFuel2022}. Elabore un script en Python para resolver el problema de regresión asociado con la predicción del consumo de combustible en ciudad y en carretera utilizando sklearn. Puede usar dos modelos lineales separados, uno para cada categoría de consumo de combustible. Escriba todas las suposiciones y las operaciones de preprocesamiento de datos que realice.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 2
+% ========================================
+\section{Problema 2}
+
+\subsection{Enunciado}
+
+Resuelva el problema 1 utilizando las ecuaciones normales de regresión lineal. Compare las soluciones de ambos problemas y anote sus conclusiones.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 3
+% ========================================
+\section{Problema 3}
+
+\subsection{Enunciado}
+
+Considere la siguiente función:
+\[
+f(x) = 2^{\cos(x^2)}, \qquad x \in \mathcal{I} = [-\pi, \pi].
+\]
+El objetivo es aproximar \(f\) mediante un modelo polinomial
+
+\[
+h(x;\theta,n) = \sum_{j=0}^{n} \theta_j x^{j}, 
+\qquad 
+\theta = (\theta_0, \theta_1, \ldots, \theta_n)^T,
+\]
+para un orden adecuado \(n\). Elabore un script en Python para resolver el problema de regresión asociado. Observe que el conjunto de datos \(D\) consiste en un muestreo de \(f\) en \(\mathcal{I}\) de tamaño \(m\). Escriba todas las suposiciones que realice. Además, escriba los hiperparámetros de optimización que elija y explique por qué los seleccionó de esa manera. Incluya una gráfica del error vs iteraciones y una gráfica de la solución. No olvide indicar qué valor de \(n\) elige y por qué.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 4
+% ========================================
+\section{Problema 4}
+
+\subsection{Enunciado}
+
+Resuelva el problema 3 utilizando el modelo de regresión polinomial de sklearn \cite{sklearnPolynomialFeatures}. Compare las soluciones de ambos problemas y escriba sus conclusiones.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 5
+% ========================================
+\section{Problema 5}
+
+\subsection{Enunciado}
+
+Resuelve el problema 3 usando las ecuaciones normales de regresión polinómica. Compara las soluciones de ambos problemas y escribe tus conclusiones.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 6
+% ========================================
+\section{Problema 6}
+
+\subsection{Enunciado}
+
+Considere el problema 3, pero esta vez utilizando un modelo lineal. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 7
+% ========================================
+\section{Problema 7}
+
+\subsection{Enunciado}
+
+Considere la siguiente función:
+\[
+f(x) = 2x^2 - 5, \qquad x \in \mathcal{I} = [-\pi, \pi].
+\]
+Use regresión polinomial con \(n = 20\). Grafique las curvas de aprendizaje asociadas. ¿Qué concluye?
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 8
+% ========================================
+\section{Problema 8}
+
+\subsection{Enunciado}
+
+Considere el problema 7, pero esta vez use solo 5 iteraciones para el entrenamiento. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 9
+% ========================================
+\section{Problema 9}
+
+\subsection{Enunciado}
+
+Considere el problema 7, pero esta vez, agregue la regularización L2 \cite{sklearnRidge}. Anote sus resultados.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 10
+% ========================================
+\section{Problema 10}
+
+\subsection{Enunciado}
+
+Considere el problema 7, pero esta vez, añada la regularización L1 \cite{sklearnLasso}. Anote sus resultados y compárelos con los del problema 10.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+\setcounter{equation}{0}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% REFERENCIAS
+% ========================================
+\bibliographystyle{plainurl}
+\bibliography{ref}
+
+
+\end{document}
