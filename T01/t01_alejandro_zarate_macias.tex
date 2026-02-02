@@ -5,11 +5,25 @@
 \usepackage{amsfonts}
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true
+}
+
 
 
 \title{Reconocimiento de Patrones (ML) - T01}
 \author{ALEJANDRO ZARATE MACIAS}
-\date{02 de Enero 2026}
+\date{02 de Febrero 2026}
 
 \begin{document}
 
@@ -29,14 +43,99 @@ En este trabajo se abordan distintos problemas de regresión lineal y polinomial
 
 Considere el conjunto de datos de \cite{kaggleFuel2022}. Elabore un script en Python para resolver el problema de regresión asociado con la predicción del consumo de combustible en ciudad y en carretera utilizando sklearn. Puede usar dos modelos lineales separados, uno para cada categoría de consumo de combustible. Escriba todas las suposiciones y las operaciones de preprocesamiento de datos que realice.
 
+% ========================================
 \subsection{Metodología}
 
-\subsection{Resultados}
-\setcounter{equation}{0}
+Se utilizó el conjunto de datos correspondiente a los consumos de combustible de vehículos modelo 2022, el cual contiene 946 observaciones y 15 variables. No se encontraron valores faltantes, por lo que no fue necesario realizar imputación de datos.
 
+La carga del conjunto de datos se realizó directamente desde Kaggle utilizando la librería \texttt{kagglehub}, lo que garantiza reproducibilidad del experimento:
+
+\begin{lstlisting}
+def get_dataset() -> pd.DataFrame:
+    file_path = "MY2022 Fuel Consumption Ratings.csv"
+    df = kagglehub.dataset_load(
+        KaggleDatasetAdapter.PANDAS,
+        "rinichristy/2022-fuel-consumption-ratings",
+        file_path
+    )
+    return df
+\end{lstlisting}
+
+Antes de definir el modelo, se analizó la cardinalidad de las variables categóricas con el objetivo de evitar un incremento excesivo en la dimensionalidad. En particular, se descartaron las variables \textit{Make} y \textit{Model} debido a su alto número de valores distintos.
+
+\begin{lstlisting}
+for column in df.select_dtypes(include=['object']).columns:
+    print(column, df[column].nunique())
+\end{lstlisting}
+
+Con base en este análisis, se seleccionaron las siguientes variables explicativas:
+
+\begin{itemize}
+    \item Variables numéricas: \textit{Engine Size(L)}, \textit{Cylinders}
+    \item Variables categóricas: \textit{Vehicle Class}, \textit{Transmission}, \textit{Fuel Type}
+\end{itemize}
+
+Las variables categóricas se transformaron mediante codificación \textit{one-hot} utilizando \texttt{get\_dummies}, eliminando una categoría por variable para evitar colinealidad perfecta.
+
+\begin{lstlisting}
+X = df[['Engine Size(L)', 'Cylinders',
+        'Vehicle Class', 'Transmission', 'Fuel Type']]
+
+X = pd.get_dummies(
+    X,
+    columns=['Vehicle Class', 'Transmission', 'Fuel Type'],
+    drop_first=True
+)
+\end{lstlisting}
+
+Se definieron dos variables objetivo: consumo de combustible en ciudad y consumo en carretera. Para cada una se entrenó un modelo de regresión lineal independiente utilizando una partición 80/20 para entrenamiento y prueba.
+
+\begin{lstlisting}
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y_city, test_size=0.2, random_state=14
+)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+\end{lstlisting}
+
+El desempeño de los modelos se evaluó utilizando el error cuadrático medio (MSE) y el coeficiente de determinación $R^2$.
+
+% ========================================
+\subsection{Resultados}
+
+Los resultados obtenidos para ambos modelos muestran un desempeño sólido y consistente entre entrenamiento y prueba.
+
+Para el consumo de combustible en ciudad, se obtuvieron los siguientes valores:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 1.6035, $R^2 = 0.8697$
+    \item \textbf{Prueba:} MSE = 1.3690, $R^2 = 0.8663$
+\end{itemize}
+
+Para el consumo de combustible en carretera, los resultados fueron:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 1.0452, $R^2 = 0.8084$
+    \item \textbf{Prueba:} MSE = 0.9527, $R^2 = 0.7752$
+\end{itemize}
+
+En ambos casos, el desempeño en prueba es comparable al de entrenamiento, lo que sugiere una buena capacidad de generalización del modelo.
+
+% ========================================
 \subsection{Discusión}
 
+Los resultados indican que un modelo lineal, utilizando un conjunto reducido de variables físicas y estructurales del vehículo, es capaz de explicar una proporción significativa de la variabilidad del consumo de combustible.
+
+El modelo presenta un mejor desempeño en la predicción del consumo en ciudad que en carretera, lo cual es razonable debido a que el consumo urbano está más influenciado por características como el tamaño del motor, el número de cilindros y el tipo de transmisión. La ausencia de un incremento significativo del error en prueba sugiere que el modelo no presenta sobreajuste.
+
+Sin embargo, el modelo asume una relación estrictamente lineal entre las variables, por lo que no captura posibles efectos no lineales ni interacciones más complejas entre las características.
+
+% ========================================
 \subsection{Conclusión}
+
+Se desarrollaron dos modelos de regresión lineal para predecir el consumo de combustible en ciudad y en carretera a partir de características básicas del vehículo. Los resultados muestran que este enfoque proporciona predicciones razonablemente precisas y con buena generalización.
+
+En conclusión, la regresión lineal resulta una herramienta adecuada como primera aproximación al problema. Como trabajo futuro, se podrían explorar modelos no lineales o técnicas de regularización para mejorar el desempeño, así como analizar la importancia relativa de cada variable explicativa.
+
 
 % ========================================
 % SECCIÓN 2
@@ -47,14 +146,73 @@ Considere el conjunto de datos de \cite{kaggleFuel2022}. Elabore un script en Py
 
 Resuelva el problema 1 utilizando las ecuaciones normales de regresión lineal. Compare las soluciones de ambos problemas y anote sus conclusiones.
 
+% ========================================
 \subsection{Metodología}
 
-\subsection{Resultados}
-\setcounter{equation}{0}
+En este problema se resolvió el mismo caso planteado en el Problema 1, utilizando exactamente el mismo conjunto de datos, las mismas variables explicativas y las mismas particiones de entrenamiento y prueba. La diferencia principal es que el ajuste del modelo se realizó mediante las ecuaciones normales de regresión lineal, en lugar de utilizar la implementación directa de \texttt{sklearn}.
 
+Se seleccionaron las mismas variables explicativas: tamaño del motor, número de cilindros, clase del vehículo, tipo de transmisión y tipo de combustible. Las variables categóricas fueron codificadas mediante \textit{one-hot encoding}, eliminando una categoría por variable para evitar colinealidad perfecta.
+
+\begin{lstlisting}
+X = df[['Engine Size(L)', 'Cylinders',
+        'Vehicle Class', 'Transmission', 'Fuel Type']]
+
+X = pd.get_dummies(
+    X,
+    columns=['Vehicle Class', 'Transmission', 'Fuel Type'],
+    drop_first=True
+)
+\end{lstlisting}
+
+Para poder aplicar la formulación matricial de las ecuaciones normales, se añadió explícitamente una columna de unos a la matriz de características con el fin de modelar el intercepto. Posteriormente, los parámetros se estimaron utilizando la pseudoinversa de Moore–Penrose, lo cual evita problemas numéricos cuando la matriz no es invertible.
+
+\begin{lstlisting}
+X_train_b = np.c_[np.ones(X_train_city.shape[0]), X_train_city]
+X_test_b  = np.c_[np.ones(X_test_city.shape[0]), X_test_city]
+
+theta_city = np.linalg.pinv(
+    X_train_b.T @ X_train_b
+) @ X_train_b.T @ y_train_city
+\end{lstlisting}
+
+Se entrenaron dos modelos independientes: uno para el consumo de combustible en ciudad y otro para el consumo en carretera. El desempeño se evaluó mediante MSE y $R^2$ en entrenamiento y prueba.
+
+% ========================================
+\subsection{Resultados}
+
+Los resultados obtenidos mediante ecuaciones normales son numéricamente idénticos a los obtenidos en el Problema 1, tanto para consumo en ciudad como para consumo en carretera.
+
+Para el consumo en ciudad:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 1.6035, $R^2 = 0.8697$
+    \item \textbf{Prueba:} MSE = 1.3690, $R^2 = 0.8663$
+\end{itemize}
+
+Para el consumo en carretera:
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 1.0452, $R^2 = 0.8084$
+    \item \textbf{Prueba:} MSE = 0.9527, $R^2 = 0.7752$
+\end{itemize}
+
+La igualdad de las métricas confirma que ambos enfoques resuelven el mismo problema de mínimos cuadrados.
+
+% ========================================
 \subsection{Discusión}
 
+Las ecuaciones normales y la implementación de \texttt{LinearRegression} de \texttt{sklearn} producen la misma solución, ya que ambos métodos estiman el modelo de mínimos cuadrados ordinarios. La principal diferencia entre ambos enfoques radica en la forma de resolver el sistema y no en el modelo obtenido.
+
+Desde un punto de vista práctico, el uso explícito de las ecuaciones normales requiere mayor cuidado numérico, especialmente cuando se trabaja con un número elevado de variables o con variables altamente correlacionadas, como ocurre tras aplicar \textit{one-hot encoding}. Por esta razón, se utilizó la pseudoinversa para garantizar estabilidad.
+
+En contraste, \texttt{sklearn} abstrae estos detalles y emplea métodos numéricos robustos, lo que simplifica la implementación y reduce el riesgo de errores.
+
+% ========================================
 \subsection{Conclusión}
+
+Resolver el problema mediante ecuaciones normales permite comprender la base matemática de la regresión lineal y verificar que la solución coincide con la obtenida usando \texttt{sklearn}. No obstante, para aplicaciones prácticas, el uso de implementaciones optimizadas resulta más conveniente y seguro.
+
+En conclusión, las ecuaciones normales son útiles con fines didácticos y de validación, mientras que las librerías especializadas son preferibles para problemas reales con mayor complejidad.
+
+
 
 % ========================================
 % SECCIÓN 3
@@ -78,12 +236,93 @@ para un orden adecuado \(n\). Elabore un script en Python para resolver el probl
 
 \subsection{Metodología}
 
+Se generó un conjunto de datos sintético muestreando la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$ con $m=1000$ puntos equiespaciados. En este ejercicio se asumió que no existe ruido en las observaciones, por lo que los valores $y$ corresponden directamente a la función.
+
+\begin{lstlisting}
+m = 1000
+x = np.linspace(-np.pi, np.pi, m)
+y = 2 ** np.cos(x ** 2)
+\end{lstlisting}
+
+Para aproximar la función se utilizó un modelo polinomial de grado $n=12$. La entrada escalar $x$ se transformó a una representación polinomial (potencias) hasta el grado seleccionado. El valor $n=12$ se eligió como un compromiso entre flexibilidad (capturar no linealidad) y evitar un modelo excesivamente complejo.
+
+\begin{lstlisting}
+n = 12
+
+def create_poly_features(x, degree):
+    return np.column_stack([x ** j for j in range(degree + 1)])
+
+X = create_poly_features(x, n)
+\end{lstlisting}
+
+Debido a que las potencias de $x$ pueden tener escalas distintas (especialmente para grados altos), se normalizaron las columnas de la matriz de características mediante estandarización (media cero y varianza unitaria). Esto se realizó con el objetivo de mejorar la estabilidad numérica y facilitar el entrenamiento con descenso por gradiente.
+
+\begin{lstlisting}
+X_mean = X.mean(axis=0)
+X_std = X.std(axis=0)
+X_std[X_std == 0] = 1
+X_norm = (X - X_mean) / X_std
+\end{lstlisting}
+
+Posteriormente, el conjunto de datos se dividió en entrenamiento y prueba (80/20). Esta partición se usó para medir desempeño fuera de muestra y comparar el error en ambos subconjuntos durante el entrenamiento.
+
+\begin{lstlisting}
+X_train, X_test, y_train, y_test = train_test_split(
+    X_norm, y, test_size=0.2, random_state=42
+)
+\end{lstlisting}
+
+El ajuste de los parámetros del modelo se realizó mediante descenso por gradiente durante $1000$ iteraciones. Se utilizó una tasa de aprendizaje $\eta=0.1$, elegida para lograr una disminución progresiva del error sin inestabilidad numérica. En cada iteración se calculó la predicción, se actualizó el vector de parámetros y se registró el MSE tanto en entrenamiento como en prueba para construir la gráfica de error vs iteraciones.
+
+\begin{lstlisting}
+learning_rate = 0.1
+n_iterations = 1000
+theta = np.zeros(n + 1)
+
+errors_train, errors_test = [], []
+
+for i in range(n_iterations):
+    y_pred_train = X_train @ theta
+    gradient = (1 / len(y_train)) * X_train.T @ (y_pred_train - y_train)
+    theta = theta - learning_rate * gradient
+
+    errors_train.append(mean_squared_error(y_train, y_pred_train))
+    errors_test.append(mean_squared_error(y_test, X_test @ theta))
+\end{lstlisting}
+
+Finalmente, se generaron dos visualizaciones: (1) la curva de error (MSE) en función de las iteraciones para entrenamiento y prueba, y (2) la comparación entre la función real y la aproximación polinomial obtenida en el intervalo $[-\pi,\pi]$.
+
 \subsection{Resultados}
-\setcounter{equation}{0}
+
+El entrenamiento del modelo polinomial se realizó con un grado $n=12$, una tasa de aprendizaje de $0.1$ y $1000$ iteraciones. Durante el proceso se observó una disminución progresiva del error cuadrático medio tanto en el conjunto de entrenamiento como en el de prueba, lo cual indica que el algoritmo de descenso por gradiente converge de manera estable.
+
+En la Figura \ref{fig:p3_resultados} se muestran dos resultados clave: 
+\begin{itemize}
+    \item la evolución del error (MSE) en función de las iteraciones 
+    \item la comparación entre la función real y la aproximación polinomial obtenida
+\end{itemize}
+Aunque el error disminuye conforme avanzan las iteraciones, el ajuste final del modelo no logra reproducir adecuadamente la forma de la función original.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p3.png}
+\caption{Izquierda: Error (MSE) en entrenamiento y prueba vs iteraciones. Derecha: comparación entre la función real $f(x)$ y la aproximación polinomial con $n=12$.}
+\label{fig:p3_resultados}
+\end{figure}
+
+Las métricas finales obtenidas confirman este comportamiento, ya que los valores de $R^2$ resultaron negativos tanto en entrenamiento como en prueba, lo que indica un desempeño pobre del modelo.
 
 \subsection{Discusión}
 
+Aunque el descenso por gradiente converge, el modelo polinomial de grado $12$ no es capaz de aproximar correctamente la función en el intervalo considerado. La gráfica de la solución muestra desviaciones importantes entre la aproximación y la función real, incluso produciendo valores fuera del rango esperado.
+
+Este comportamiento sugiere que la representación polinomial en base monomial no es adecuada para este problema, aun cuando se aplicó normalización y se eligieron hiperparámetros razonables. El modelo converge, pero lo hace hacia una solución que no describe bien la función objetivo.
+
 \subsection{Conclusión}
+
+Se implementó una regresión polinomial entrenada mediante descenso por gradiente para aproximar la función $f(x)=2^{\cos(x^2)}$. A pesar de que el error disminuyó durante el entrenamiento, la aproximación obtenida fue deficiente, como lo evidencian los valores negativos de $R^2$ y la comparación gráfica.
+
+En conclusión, este experimento muestra que la convergencia del algoritmo de optimización no garantiza un buen ajuste del modelo. Para este tipo de funciones, es necesario considerar representaciones más adecuadas o métodos alternativos que mejoren la estabilidad y la calidad de la aproximación.
 
 % ========================================
 % SECCIÓN 4
@@ -94,14 +333,48 @@ para un orden adecuado \(n\). Elabore un script en Python para resolver el probl
 
 Resuelva el problema 3 utilizando el modelo de regresión polinomial de sklearn \cite{sklearnPolynomialFeatures}. Compare las soluciones de ambos problemas y escriba sus conclusiones.
 
+% ========================================
 \subsection{Metodología}
 
-\subsection{Resultados}
-\setcounter{equation}{0}
+Se utilizó el mismo conjunto de datos generado en el Problema 3, correspondiente al muestreo de la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$ con $m=1000$ puntos. Asimismo, se empleó el mismo grado polinomial $n=12$ para permitir una comparación directa entre ambos enfoques.
 
+La regresión polinomial se implementó utilizando las herramientas de \texttt{sklearn}, específicamente el transformador \texttt{PolynomialFeatures} junto con un modelo de \texttt{LinearRegression}, integrados mediante un \texttt{Pipeline}. Este enfoque automatiza la generación de características polinomiales y el ajuste del modelo, delegando a la librería la resolución numéricamente estable del problema de mínimos cuadrados.
+
+El conjunto de datos se dividió nuevamente en entrenamiento y prueba con una proporción 80/20. El desempeño del modelo se evaluó mediante el error cuadrático medio (MSE) y el coeficiente de determinación $R^2$, y se generó una gráfica para comparar visualmente la función real con la aproximación obtenida.
+
+% ========================================
+\subsection{Resultados}
+
+Los resultados obtenidos con la regresión polinomial de \texttt{sklearn} muestran un ajuste significativamente superior al observado en el Problema 3. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.006398, $R^2 = 0.9808$
+    \item \textbf{Prueba:} MSE = 0.007259, $R^2 = 0.9764$
+\end{itemize}
+
+En la Figura~\ref{fig:p4_resultados} se observa que la aproximación polinomial (línea roja punteada) sigue de manera muy cercana el comportamiento de la función real en todo el intervalo. A diferencia del Problema 3, no se presentan oscilaciones severas ni valores fuera del rango esperado.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{images/p4.png}
+\caption{Comparación entre la función real $f(x)$ y la aproximación polinomial obtenida con \texttt{sklearn} para $n=12$.}
+\label{fig:p4_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
+Los resultados evidencian que, utilizando el mismo grado polinomial, la implementación de \texttt{sklearn} produce un modelo con excelente capacidad de ajuste y generalización. A diferencia del enfoque manual con descenso por gradiente, el modelo converge a una solución adecuada y estable.
+
+Esta mejora se debe principalmente a que \texttt{sklearn} emplea métodos numéricos robustos para resolver el problema de mínimos cuadrados, evitando los problemas de inestabilidad y mal condicionamiento observados en el Problema 3.
+
+% ========================================
 \subsection{Conclusión}
+
+Al comparar ambos enfoques, se concluye que la regresión polinomial implementada con \texttt{sklearn} es claramente superior a la solución manual mediante descenso por gradiente para este problema. Aunque ambos utilizan el mismo grado polinomial, la diferencia en la metodología de optimización y estabilidad numérica impacta directamente en la calidad del ajuste.
+
+En conclusión, este experimento resalta la importancia de utilizar implementaciones numéricamente estables y bien optimizadas en problemas de regresión, especialmente cuando se trabaja con modelos polinomiales de grado relativamente alto.
+
 
 % ========================================
 % SECCIÓN 5
@@ -112,14 +385,47 @@ Resuelva el problema 3 utilizando el modelo de regresión polinomial de sklearn 
 
 Resuelve el problema 3 usando las ecuaciones normales de regresión polinómica. Compara las soluciones de ambos problemas y escribe tus conclusiones.
 
+% ========================================
 \subsection{Metodología}
 
-\subsection{Resultados}
-\setcounter{equation}{0}
+Se utilizó el mismo enfoque de aproximación polinomial planteado en el Problema 3, considerando la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$. En este caso, el ajuste del modelo se realizó mediante ecuaciones normales en lugar de descenso por gradiente.
 
+Se generó un conjunto de datos con $m=100$ puntos equiespaciados y se construyó la matriz de características polinomiales hasta grado $n=12$. A diferencia del Problema 3, los parámetros del modelo se estimaron de forma directa resolviendo el sistema asociado a mínimos cuadrados mediante la pseudoinversa, lo que permite obtener la solución en una sola etapa sin iteraciones.
+
+El conjunto de datos se dividió en entrenamiento y prueba (80/20) para evaluar la capacidad de generalización del modelo. El desempeño se midió usando MSE y $R^2$, y se generó una gráfica para comparar visualmente la función real con la aproximación obtenida.
+
+% ========================================
+\subsection{Resultados}
+
+El modelo entrenado mediante ecuaciones normales logró un ajuste adecuado en el conjunto de entrenamiento y un desempeño razonable en el conjunto de prueba. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.006276, $R^2 = 0.9804$
+    \item \textbf{Prueba:} MSE = 0.027940, $R^2 = 0.9223$
+\end{itemize}
+
+En la Figura~\ref{fig:p5_resultados} se observa que la aproximación polinomial sigue de manera cercana el comportamiento general de la función real. No obstante, se aprecian pequeñas desviaciones en las regiones cercanas a los extremos del intervalo.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\textwidth]{images/p5.png}
+\caption{Comparación entre la función real $f(x)$ y la aproximación polinomial obtenida mediante ecuaciones normales para $n=12$.}
+\label{fig:p5_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
+En comparación con el Problema 3, el uso de ecuaciones normales mejora de forma significativa el ajuste del modelo, eliminando los problemas de convergencia observados con descenso por gradiente. El modelo logra capturar correctamente la forma global de la función.
+
+Sin embargo, al compararlo con el Problema 4, se observa que el desempeño en prueba es inferior, lo cual sugiere una mayor sensibilidad a la cantidad de datos y a la estabilidad numérica del método. Esto es consistente con el hecho de que las ecuaciones normales pueden verse afectadas por matrices mal condicionadas cuando se utilizan bases polinomiales de grado relativamente alto.
+
+% ========================================
 \subsection{Conclusión}
+
+La regresión polinomial resuelta mediante ecuaciones normales permite obtener una buena aproximación de la función sin necesidad de un proceso iterativo de optimización. No obstante, su desempeño en generalización es inferior al obtenido con la implementación de \texttt{sklearn}.
+
+En conclusión, este experimento muestra que, aunque las ecuaciones normales son útiles desde un punto de vista conceptual y educativo, en aplicaciones prácticas resulta preferible emplear implementaciones numéricamente más robustas, especialmente cuando se trabaja con modelos polinomiales de grado elevado.
 
 % ========================================
 % SECCIÓN 6
@@ -130,14 +436,45 @@ Resuelve el problema 3 usando las ecuaciones normales de regresión polinómica.
 
 Considere el problema 3, pero esta vez utilizando un modelo lineal. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
 
+% ========================================
 \subsection{Metodología}
 
+Se utilizó el mismo conjunto de datos sintético definido en el Problema 3, muestreando la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. En este problema se sustituyó el modelo polinomial por un modelo estrictamente lineal de la forma $y \approx ax + b$, utilizando \texttt{LinearRegression} de \texttt{sklearn}.
+
+Para analizar el comportamiento del modelo conforme aumenta la cantidad de datos, se calcularon curvas de aprendizaje con validación cruzada de 5 particiones (\texttt{cv=5}) usando la función \texttt{learning\_curve}. Se evaluó el desempeño mediante MSE (implementado como \texttt{neg\_mean\_squared\_error} y posteriormente convertido a positivo). Adicionalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales (MSE y $R^2$) en entrenamiento y prueba, y se generó una gráfica comparando la función real con la aproximación lineal.
+
+% ========================================
 \subsection{Resultados}
 \setcounter{equation}{0}
 
+Las métricas obtenidas para el modelo lineal fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.320026, $R^2 = 0.0002$
+    \item \textbf{Prueba:} MSE = 0.374073, $R^2 = -0.0405$
+\end{itemize}
+
+En la Figura~\ref{fig:p6_resultados} se observan (izquierda) las curvas de aprendizaje y (derecha) la aproximación final del modelo lineal. La aproximación obtenida es prácticamente una recta casi constante y no captura la estructura no lineal de la función, lo cual coincide con los valores de $R^2$ cercanos a cero o negativos.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p6.png}
+\caption{Izquierda: curvas de aprendizaje (MSE) del modelo lineal en entrenamiento y validación. Derecha: comparación entre $f(x)$ y la aproximación lineal.}
+\label{fig:p6_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
+Las curvas de aprendizaje muestran que el error de entrenamiento se mantiene bajo y estable, mientras que el error de validación disminuye al aumentar el tamaño del conjunto de entrenamiento, pero se estanca en un valor relativamente alto. Este patrón indica \textbf{alto sesgo} (underfitting): el modelo es demasiado simple para representar la relación entre $x$ y $y$.
+
+La gráfica de la aproximación confirma este comportamiento: el modelo lineal no puede reproducir las variaciones de la función y termina ajustando esencialmente un valor promedio. Por esta razón, agregar más datos no produce una mejora sustancial, ya que la limitación principal es la capacidad del modelo y no la cantidad de información disponible.
+
+% ========================================
 \subsection{Conclusión}
+
+El modelo lineal no es adecuado para aproximar $f(x)=2^{\cos(x^2)}$ en $[-\pi,\pi]$, ya que presenta underfitting evidente. Las curvas de aprendizaje sugieren que el error de validación se estabiliza incluso al aumentar la cantidad de datos, por lo que la mejora requiere aumentar la capacidad del modelo (por ejemplo, usando características polinomiales o modelos no lineales), en lugar de únicamente incrementar el tamaño del conjunto de entrenamiento.
+
 
 % ========================================
 % SECCIÓN 7
@@ -152,32 +489,90 @@ f(x) = 2x^2 - 5, \qquad x \in \mathcal{I} = [-\pi, \pi].
 \]
 Use regresión polinomial con \(n = 20\). Grafique las curvas de aprendizaje asociadas. ¿Qué concluye?
 
+% ========================================
 \subsection{Metodología}
 
-\subsection{Resultados}
-\setcounter{equation}{0}
+Se generó un conjunto de datos sintético muestreando la función $f(x)=2x^2-5$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos equiespaciados. Posteriormente, se construyeron características polinomiales hasta grado $n=20$ usando \texttt{PolynomialFeatures} de \texttt{sklearn}.
 
+Debido a que las potencias de $x$ pueden tener escalas muy distintas, las características polinomiales fueron estandarizadas con \texttt{StandardScaler}. Para entrenar el modelo se utilizó \texttt{SGDRegressor} con $1000$ iteraciones, lo cual permite controlar el proceso iterativo y mantener consistencia con ejercicios previos donde se usaron métodos iterativos.
+
+Para las curvas de aprendizaje se utilizó validación cruzada con $cv=5$ y se evaluó el desempeño con MSE. Finalmente, se entrenó un modelo con partición 80/20 para reportar métricas finales (MSE y $R^2$) y se generó una gráfica comparando la función real con la aproximación obtenida.
+
+% ========================================
+\subsection{Resultados}
+
+El modelo polinomial de grado $n=20$ logró un ajuste excelente tanto en entrenamiento como en prueba. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.010867, $R^2 = 0.9997$
+    \item \textbf{Prueba:} MSE = 0.012839, $R^2 = 0.9997$
+\end{itemize}
+
+En la Figura~\ref{fig:p7_resultados} se muestran (izquierda) las curvas de aprendizaje y (derecha) la aproximación obtenida. Se observa que la predicción del modelo coincide prácticamente con la función real en todo el intervalo, lo cual es esperado debido a que la función objetivo es cuadrática y, por tanto, pertenece a la familia de funciones que un polinomio puede representar exactamente.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p7.png}
+\caption{Izquierda: curvas de aprendizaje (MSE) para regresión polinomial con $n=20$. Derecha: comparación entre $f(x)=2x^2-5$ y la aproximación obtenida.}
+\label{fig:p7_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
-\subsection{Conclusión}
+Las curvas de aprendizaje muestran un error de entrenamiento muy bajo y un error de validación que disminuye conforme crece el tamaño del conjunto de entrenamiento. La separación entre ambas curvas es pequeña, lo cual indica buena generalización y ausencia de sobreajuste relevante, a pesar del alto grado polinomial ($n=20$).
+
+En este caso, el grado $n=20$ es mayor al necesario, ya que un polinomio de grado $2$ sería suficiente para modelar exactamente la función. Sin embargo, el buen desempeño se explica porque (i) los datos siguen una relación polinomial simple y (ii) la estandarización ayuda a la estabilidad numérica durante el entrenamiento con descenso estocástico.
 
 % ========================================
-% SECCIÓN 8
-% ========================================
+\subsection{Conclusión}
+
+La regresión polinomial con $n=20$ aproxima la función $f(x)=2x^2-5$ con alta precisión, reflejada en MSE muy bajo y $R^2\approx 1$ tanto en entrenamiento como en prueba. Las curvas de aprendizaje confirman que el modelo generaliza correctamente.
+
+Como conclusión, cuando la función objetivo pertenece a la familia polinomial (en este caso cuadrática), el modelo puede lograr un ajuste excelente incluso con grados mayores al necesario. Sin embargo, desde una perspectiva práctica, conviene elegir el menor grado que explique los datos para reducir complejidad y riesgo de inestabilidad numérica.
+
+
 \section{Problema 8}
 
 \subsection{Enunciado}
 
 Considere el problema 7, pero esta vez use solo 5 iteraciones para el entrenamiento. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
 
+% ========================================
 \subsection{Metodología}
 
+Se replicó el experimento del Problema 7 con la misma función objetivo $f(x)=2x^2-5$, el mismo muestreo ($m=100$ puntos en $[-\pi,\pi]$) y el mismo modelo de regresión polinomial con $n=20$ usando \texttt{PolynomialFeatures}. También se mantuvo la estandarización de las características con \texttt{StandardScaler}.
+
+La única modificación fue reducir el entrenamiento del modelo \texttt{SGDRegressor} a únicamente 5 iteraciones (\texttt{max\_iter=5}). Posteriormente, se calcularon curvas de aprendizaje con validación cruzada (\texttt{cv=5}) usando MSE como métrica, y se reportaron métricas finales en una partición 80/20 para comparar con el caso del Problema 7.
+
 \subsection{Resultados}
-\setcounter{equation}{0}
+
+Al entrenar el modelo de regresión polinomial con $n=20$ utilizando únicamente 5 iteraciones, el desempeño disminuye de manera considerable en comparación con el caso del Problema 7. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 3.194353, $R^2 = 0.9097$
+    \item \textbf{Prueba:} MSE = 2.698958, $R^2 = 0.9303$
+\end{itemize}
+
+En la Figura~\ref{fig:p8_resultados} se muestran las curvas de aprendizaje y la aproximación obtenida. Se observa que el error de validación permanece alto incluso al aumentar el tamaño del conjunto de entrenamiento. Asimismo, la aproximación polinomial no coincide completamente con la función real, especialmente en las regiones cercanas a los extremos del intervalo.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p8.png}
+\caption{Izquierda: curvas de aprendizaje (MSE) para regresión polinomial con $n=20$ entrenada con solo 5 iteraciones. Derecha: comparación entre $f(x)=2x^2-5$ y la aproximación obtenida.}
+\label{fig:p8_resultados}
+\end{figure}
 
 \subsection{Discusión}
 
+Las curvas de aprendizaje indican que el modelo no logra reducir el error de validación de forma significativa, aun cuando se incrementa el número de muestras de entrenamiento. Esto sugiere que el problema no radica en la cantidad de datos, sino en un entrenamiento insuficiente.
+
+La gráfica de la aproximación muestra que el modelo conserva la forma general de la función, pero con un desplazamiento y curvatura incorrectos. Este comportamiento es característico de un modelo con capacidad suficiente, pero cuyos parámetros no han convergido debido al número limitado de iteraciones.
+
 \subsection{Conclusión}
+
+Reducir el entrenamiento a solo 5 iteraciones impide que el modelo alcance una solución adecuada, aun cuando la función objetivo es simple y polinomial. En conclusión, este experimento demuestra que un número insuficiente de iteraciones provoca under-training, y que permitir la convergencia del algoritmo de optimización es tan importante como la elección del modelo y sus características.
+
 
 % ========================================
 % SECCIÓN 9
@@ -188,14 +583,49 @@ Considere el problema 7, pero esta vez use solo 5 iteraciones para el entrenamie
 
 Considere el problema 7, pero esta vez, agregue la regularización L2 \cite{sklearnRidge}. Anote sus resultados.
 
+% ========================================
 \subsection{Metodología}
 
+Se retomó el experimento del Problema 7, utilizando la función $f(x)=2x^2-5$ muestreada en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. Se construyeron características polinomiales hasta grado $n=20$ y se aplicó estandarización para mejorar la estabilidad numérica.
+
+A diferencia del Problema 7, el ajuste del modelo se realizó mediante regresión Ridge (regularización L2), usando la implementación \texttt{Ridge} de \texttt{sklearn} con un parámetro de regularización $\alpha=1.0$. Este término penaliza la magnitud de los coeficientes del modelo, con el objetivo de reducir la varianza y evitar soluciones numéricamente inestables.
+
+Se calcularon curvas de aprendizaje utilizando validación cruzada con $cv=5$ y MSE como métrica. Finalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales y generar la gráfica de la aproximación.
+
+% ========================================
 \subsection{Resultados}
 \setcounter{equation}{0}
 
+El modelo polinomial con regularización L2 presentó un desempeño muy alto tanto en entrenamiento como en prueba. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.036574, $R^2 = 0.9990$
+    \item \textbf{Prueba:} MSE = 0.045137, $R^2 = 0.9985$
+\end{itemize}
+
+En la Figura~\ref{fig:p9_resultados} se muestran las curvas de aprendizaje y la aproximación obtenida. Se observa que la curva de validación disminuye de forma estable conforme aumenta el tamaño del conjunto de entrenamiento, y que la aproximación sigue de manera muy cercana a la función real en todo el intervalo.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p9.png}
+\caption{Izquierda: curvas de aprendizaje (MSE) para regresión polinomial con $n=20$ y regularización Ridge (L2). Derecha: comparación entre $f(x)=2x^2-5$ y la aproximación obtenida con regularización L2.}
+\label{fig:p9_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
+La regularización L2 permite controlar la magnitud de los coeficientes del polinomio, lo que resulta en un modelo más estable y con mejor comportamiento en generalización. En comparación con el Problema 7, el desempeño sigue siendo excelente, aunque con un ligero incremento en el error de entrenamiento, lo cual es esperado debido al sesgo introducido por la regularización.
+
+A diferencia del Problema 8, donde el entrenamiento insuficiente limitaba el ajuste, aquí el modelo converge adecuadamente y mantiene una buena separación entre las curvas de entrenamiento y validación, evitando tanto el sobreajuste como inestabilidades numéricas.
+
+% ========================================
 \subsection{Conclusión}
+
+La inclusión de regularización L2 en la regresión polinomial mejora la estabilidad del modelo y mantiene un excelente desempeño predictivo. Aunque introduce un pequeño aumento en el error de entrenamiento, el modelo generaliza de manera consistente y produce una aproximación suave y cercana a la función real.
+
+En conclusión, la regularización es una herramienta clave cuando se trabaja con modelos polinomiales de alto grado, ya que permite balancear adecuadamente la complejidad del modelo y su capacidad de generalización.
+
 
 % ========================================
 % SECCIÓN 10
@@ -204,16 +634,51 @@ Considere el problema 7, pero esta vez, agregue la regularización L2 \cite{skle
 
 \subsection{Enunciado}
 
-Considere el problema 7, pero esta vez, añada la regularización L1 \cite{sklearnLasso}. Anote sus resultados y compárelos con los del problema 10.
+Considere el problema 7, pero esta vez, añada la regularización L1 \cite{sklearnLasso}. Anote sus resultados y compárelos con los del problema 9.
 
+% ========================================
 \subsection{Metodología}
 
+Se repitió el experimento del Problema 7 utilizando la función $f(x)=2x^2-5$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. Se generaron características polinomiales hasta grado $n=20$ y se aplicó estandarización para asegurar estabilidad numérica.
+
+El modelo se entrenó mediante regresión Lasso (regularización L1) usando la implementación \texttt{Lasso} de \texttt{sklearn}, con parámetro de regularización $\alpha=0.1$. A diferencia de la regularización L2, L1 tiende a forzar a cero algunos coeficientes, promoviendo soluciones más simples y potencialmente más interpretables.
+
+Se calcularon curvas de aprendizaje con validación cruzada (\texttt{cv=5}) usando MSE como métrica. Finalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales y generar la gráfica de la aproximación.
+
+% ========================================
 \subsection{Resultados}
 \setcounter{equation}{0}
 
+El modelo con regularización L1 mostró un desempeño excelente tanto en entrenamiento como en prueba. Las métricas obtenidas fueron:
+
+\begin{itemize}
+    \item \textbf{Entrenamiento:} MSE = 0.009612, $R^2 = 0.9997$
+    \item \textbf{Prueba:} MSE = 0.007749, $R^2 = 0.9997$
+\end{itemize}
+
+En la Figura~\ref{fig:p10_resultados} se observan las curvas de aprendizaje y la aproximación obtenida. El error de validación disminuye rápidamente conforme aumenta el tamaño del conjunto de entrenamiento, y la aproximación coincide prácticamente con la función real en todo el intervalo.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\textwidth]{images/p10.png}
+\caption{Izquierda: curvas de aprendizaje (MSE) para regresión polinomial con $n=20$ y regularización Lasso (L1). Derecha: comparación entre $f(x)=2x^2-5$ y la aproximación obtenida con Lasso.}
+\label{fig:p10_resultados}
+\end{figure}
+
+% ========================================
 \subsection{Discusión}
 
+La regularización L1 permite obtener un modelo con excelente capacidad de generalización, manteniendo errores muy bajos en entrenamiento y prueba. En comparación con el Problema 9 (Ridge, L2), el desempeño es ligeramente mejor en términos de MSE, lo que sugiere que L1 es suficiente para controlar la complejidad del modelo en este caso.
+
+Dado que la función objetivo es cuadrática, la regularización L1 tiende a favorecer una representación más simple, eliminando coeficientes innecesarios asociados a grados altos del polinomio. Esto explica por qué el modelo logra un ajuste preciso sin introducir oscilaciones ni inestabilidad numérica.
+
+% ========================================
 \subsection{Conclusión}
+
+La regresión polinomial con regularización L1 proporciona una aproximación muy precisa de la función $f(x)=2x^2-5$, con excelente generalización y errores mínimos. En comparación con la regularización L2, L1 ofrece un ajuste ligeramente más eficiente al promover soluciones más simples.
+
+En conclusión, cuando la función objetivo es inherentemente simple, la regularización L1 resulta especialmente efectiva, ya que reduce la complejidad del modelo sin sacrificar precisión.
+
 
 % ========================================
 % REFERENCIAS
