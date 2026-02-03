@@ -30,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-En este trabajo se abordan distintos problemas de regresión lineal y polinomial aplicados al reconocimiento de patrones. Se utilizan tanto conjuntos de datos reales como funciones analíticas para analizar el comportamiento de los modelos de regresión bajo diferentes configuraciones. Se estudia el efecto del grado del polinomio, el número de iteraciones y la inclusión de regularización L1 y L2. Finalmente, se emplean curvas de aprendizaje para evaluar el desempeño de los modelos y analizar fenómenos de subajuste y sobreajuste.
+En este trabajo se abordan distintos problemas de regresión lineal y polinomial aplicados al reconocimiento de patrones. Se utilizan tanto conjuntos de datos reales como funciones analíticas para analizar el comportamiento de los modelos de regresión bajo diferentes configuraciones. Se estudia el efecto del grado del polinomio, el número de iteraciones y la inclusión de regularización L1 y L2. Finalmente, se emplean curvas de aprendizaje para evaluar el desempeño de los modelos y analizar fenómenos de underfitting y overfitting.
 \end{abstract}
 
 
@@ -46,7 +46,7 @@ Considere el conjunto de datos de \cite{kaggleFuel2022}. Elabore un script en Py
 % ========================================
 \subsection{Metodología}
 
-Se utilizó el conjunto de datos correspondiente a los consumos de combustible de vehículos modelo 2022, el cual contiene 946 observaciones y 15 variables. No se encontraron valores faltantes, por lo que no fue necesario realizar imputación de datos.
+Se utilizó el conjunto de datos correspondiente a los consumos de combustible de vehículos modelo 2022, el cual contiene 946 observaciones y 15 variables. No se encontraron valores faltantes, por lo que no fue necesario realizar un tratamiento de eliminación de registros con valores nulos.
 
 La carga del conjunto de datos se realizó directamente desde Kaggle utilizando la librería \texttt{kagglehub}, lo que garantiza reproducibilidad del experimento:
 
@@ -68,6 +68,15 @@ for column in df.select_dtypes(include=['object']).columns:
     print(column, df[column].nunique())
 \end{lstlisting}
 
+Resultados de valores distintos por columna:
+\begin{itemize}
+    \item Make: 39
+    \item Model: 715
+    \item Vehicle Class: 14 
+    \item Transmission: 23
+    \item Fuel Type: 4
+\end{itemize}
+
 Con base en este análisis, se seleccionaron las siguientes variables explicativas:
 
 \begin{itemize}
@@ -75,7 +84,7 @@ Con base en este análisis, se seleccionaron las siguientes variables explicativ
     \item Variables categóricas: \textit{Vehicle Class}, \textit{Transmission}, \textit{Fuel Type}
 \end{itemize}
 
-Las variables categóricas se transformaron mediante codificación \textit{one-hot} utilizando \texttt{get\_dummies}, eliminando una categoría por variable para evitar colinealidad perfecta.
+Las variables categóricas se transformaron mediante codificación \textit{one-hot} utilizando \texttt{get\_dummies} de la libreria pandas, eliminando una categoría por variable para evitar colinealidad.
 
 \begin{lstlisting}
 X = df[['Engine Size(L)', 'Cylinders',
@@ -123,7 +132,7 @@ En ambos casos, el desempeño en prueba es comparable al de entrenamiento, lo qu
 % ========================================
 \subsection{Discusión}
 
-Los resultados indican que un modelo lineal, utilizando un conjunto reducido de variables físicas y estructurales del vehículo, es capaz de explicar una proporción significativa de la variabilidad del consumo de combustible.
+Los resultados indican que un modelo lineal, utilizando un conjunto reducido de variables cualitativas y cuantitativas relacionadas al tipo de vehículo, es capaz de explicar generalizar de buena manera el consumo que estos podrian tener tanto en ciudad, como en carretera.
 
 El modelo presenta un mejor desempeño en la predicción del consumo en ciudad que en carretera, lo cual es razonable debido a que el consumo urbano está más influenciado por características como el tamaño del motor, el número de cilindros y el tipo de transmisión. La ausencia de un incremento significativo del error en prueba sugiere que el modelo no presenta sobreajuste.
 
@@ -134,7 +143,7 @@ Sin embargo, el modelo asume una relación estrictamente lineal entre las variab
 
 Se desarrollaron dos modelos de regresión lineal para predecir el consumo de combustible en ciudad y en carretera a partir de características básicas del vehículo. Los resultados muestran que este enfoque proporciona predicciones razonablemente precisas y con buena generalización.
 
-En conclusión, la regresión lineal resulta una herramienta adecuada como primera aproximación al problema. Como trabajo futuro, se podrían explorar modelos no lineales o técnicas de regularización para mejorar el desempeño, así como analizar la importancia relativa de cada variable explicativa.
+En conclusión, la regresión lineal resulta una herramienta adecuada como primera aproximación al problema.
 
 
 % ========================================
@@ -151,7 +160,7 @@ Resuelva el problema 1 utilizando las ecuaciones normales de regresión lineal. 
 
 En este problema se resolvió el mismo caso planteado en el Problema 1, utilizando exactamente el mismo conjunto de datos, las mismas variables explicativas y las mismas particiones de entrenamiento y prueba. La diferencia principal es que el ajuste del modelo se realizó mediante las ecuaciones normales de regresión lineal, en lugar de utilizar la implementación directa de \texttt{sklearn}.
 
-Se seleccionaron las mismas variables explicativas: tamaño del motor, número de cilindros, clase del vehículo, tipo de transmisión y tipo de combustible. Las variables categóricas fueron codificadas mediante \textit{one-hot encoding}, eliminando una categoría por variable para evitar colinealidad perfecta.
+Se seleccionaron las mismas variables explicativas: tamaño del motor, número de cilindros, clase del vehículo, tipo de transmisión y tipo de combustible. Las variables categóricas fueron codificadas mediante \textit{one-hot encoding}, eliminando una categoría por variable para evitar colinealidad.
 
 \begin{lstlisting}
 X = df[['Engine Size(L)', 'Cylinders',
@@ -180,7 +189,7 @@ Se entrenaron dos modelos independientes: uno para el consumo de combustible en 
 % ========================================
 \subsection{Resultados}
 
-Los resultados obtenidos mediante ecuaciones normales son numéricamente idénticos a los obtenidos en el Problema 1, tanto para consumo en ciudad como para consumo en carretera.
+Los resultados obtenidos mediante ecuaciones normales son practicamente idénticos a los obtenidos en el Problema 1, tanto para consumo en ciudad como para consumo en carretera.
 
 Para el consumo en ciudad:
 \begin{itemize}
@@ -194,7 +203,8 @@ Para el consumo en carretera:
     \item \textbf{Prueba:} MSE = 0.9527, $R^2 = 0.7752$
 \end{itemize}
 
-La igualdad de las métricas confirma que ambos enfoques resuelven el mismo problema de mínimos cuadrados.
+La igualdad de las métricas confirma que ambos enfoques resuelven el mismo
+problema de mínimos cuadrados.
 
 % ========================================
 \subsection{Discusión}
@@ -244,7 +254,7 @@ x = np.linspace(-np.pi, np.pi, m)
 y = 2 ** np.cos(x ** 2)
 \end{lstlisting}
 
-Para aproximar la función se utilizó un modelo polinomial de grado $n=12$. La entrada escalar $x$ se transformó a una representación polinomial (potencias) hasta el grado seleccionado. El valor $n=12$ se eligió como un compromiso entre flexibilidad (capturar no linealidad) y evitar un modelo excesivamente complejo.
+Para aproximar la función se utilizó un modelo polinomial de grado $n=12$. La entrada escalar $x$ se transformó a una representación polinomial hasta el grado seleccionado. El valor $n=12$ se eligió como un compromiso entre flexibilidad y evitar un modelo excesivamente complejo.
 
 \begin{lstlisting}
 n = 12
@@ -255,7 +265,7 @@ def create_poly_features(x, degree):
 X = create_poly_features(x, n)
 \end{lstlisting}
 
-Debido a que las potencias de $x$ pueden tener escalas distintas (especialmente para grados altos), se normalizaron las columnas de la matriz de características mediante estandarización (media cero y varianza unitaria). Esto se realizó con el objetivo de mejorar la estabilidad numérica y facilitar el entrenamiento con descenso por gradiente.
+Debido a que las potencias de $x$ pueden tener escalas distintas (especialmente para grados altos), se normalizaron las columnas de la matriz de características mediante estandarización (media y desviación estándar). Esto se realizó con el objetivo de mejorar la estabilidad numérica y facilitar el entrenamiento con descenso por gradiente.
 
 \begin{lstlisting}
 X_mean = X.mean(axis=0)
@@ -272,7 +282,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 \end{lstlisting}
 
-El ajuste de los parámetros del modelo se realizó mediante descenso por gradiente durante $1000$ iteraciones. Se utilizó una tasa de aprendizaje $\eta=0.1$, elegida para lograr una disminución progresiva del error sin inestabilidad numérica. En cada iteración se calculó la predicción, se actualizó el vector de parámetros y se registró el MSE tanto en entrenamiento como en prueba para construir la gráfica de error vs iteraciones.
+El ajuste de los parámetros del modelo se realizó mediante descenso por gradiente durante $1000$ iteraciones. Se utilizó una tasa de aprendizaje $\eta=0.1$, elegida para lograr una disminución progresiva y rápida, aunque corriendo el riesgo de que el modelo no alcanzara su punto optimo al dar pasos no tan pequeños. En cada iteración se calculó la predicción, se actualizó el vector de parámetros y se registró el MSE tanto en entrenamiento como en prueba para construir la gráfica de error vs iteraciones.
 
 \begin{lstlisting}
 learning_rate = 0.1
@@ -290,7 +300,7 @@ for i in range(n_iterations):
     errors_test.append(mean_squared_error(y_test, X_test @ theta))
 \end{lstlisting}
 
-Finalmente, se generaron dos visualizaciones: (1) la curva de error (MSE) en función de las iteraciones para entrenamiento y prueba, y (2) la comparación entre la función real y la aproximación polinomial obtenida en el intervalo $[-\pi,\pi]$.
+Finalmente, se generaron dos visualizaciones: la curva de error (MSE) en función de las iteraciones para entrenamiento y prueba, y la comparación entre la función real y la aproximación polinomial obtenida en el intervalo $[-\pi,\pi]$.
 
 \subsection{Resultados}
 
@@ -333,14 +343,30 @@ En conclusión, este experimento muestra que la convergencia del algoritmo de op
 
 Resuelva el problema 3 utilizando el modelo de regresión polinomial de sklearn \cite{sklearnPolynomialFeatures}. Compare las soluciones de ambos problemas y escriba sus conclusiones.
 
-% ========================================
 \subsection{Metodología}
 
-Se utilizó el mismo conjunto de datos generado en el Problema 3, correspondiente al muestreo de la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$ con $m=1000$ puntos. Asimismo, se empleó el mismo grado polinomial $n=12$ para permitir una comparación directa entre ambos enfoques.
+Se reutilizó el mismo conjunto de datos del Problema 3 y el mismo grado polinomial ($n=12$). La diferencia principal fue que aquí se usó la implementación de \texttt{sklearn} para generar automáticamente las características polinomiales y ajustar el modelo lineal en un \texttt{Pipeline}. Esto evita la implementación manual del descenso por gradiente y delega la solución a un método numéricamente estable.
 
-La regresión polinomial se implementó utilizando las herramientas de \texttt{sklearn}, específicamente el transformador \texttt{PolynomialFeatures} junto con un modelo de \texttt{LinearRegression}, integrados mediante un \texttt{Pipeline}. Este enfoque automatiza la generación de características polinomiales y el ajuste del modelo, delegando a la librería la resolución numéricamente estable del problema de mínimos cuadrados.
+\begin{lstlisting}
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
 
-El conjunto de datos se dividió nuevamente en entrenamiento y prueba con una proporción 80/20. El desempeño del modelo se evaluó mediante el error cuadrático medio (MSE) y el coeficiente de determinación $R^2$, y se generó una gráfica para comparar visualmente la función real con la aproximación obtenida.
+n = 12
+model = make_pipeline(
+    PolynomialFeatures(degree=n),
+    LinearRegression()
+)
+model.fit(x_train, y_train)
+\end{lstlisting}
+
+Finalmente, se generó la aproximación sobre una malla de valores para comparar visualmente la función real contra la predicción del modelo.
+
+\begin{lstlisting}
+x_plot = np.linspace(-np.pi, np.pi, 200).reshape(-1, 1)
+y_plot_pred = model.predict(x_plot)
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -373,8 +399,6 @@ Esta mejora se debe principalmente a que \texttt{sklearn} emplea métodos numér
 
 Al comparar ambos enfoques, se concluye que la regresión polinomial implementada con \texttt{sklearn} es claramente superior a la solución manual mediante descenso por gradiente para este problema. Aunque ambos utilizan el mismo grado polinomial, la diferencia en la metodología de optimización y estabilidad numérica impacta directamente en la calidad del ajuste.
 
-En conclusión, este experimento resalta la importancia de utilizar implementaciones numéricamente estables y bien optimizadas en problemas de regresión, especialmente cuando se trabaja con modelos polinomiales de grado relativamente alto.
-
 
 % ========================================
 % SECCIÓN 5
@@ -385,14 +409,27 @@ En conclusión, este experimento resalta la importancia de utilizar implementaci
 
 Resuelve el problema 3 usando las ecuaciones normales de regresión polinómica. Compara las soluciones de ambos problemas y escribe tus conclusiones.
 
-% ========================================
 \subsection{Metodología}
 
-Se utilizó el mismo enfoque de aproximación polinomial planteado en el Problema 3, considerando la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$. En este caso, el ajuste del modelo se realizó mediante ecuaciones normales en lugar de descenso por gradiente.
+Se utilizó el mismo planteamiento del Problema 3 en cuanto a la forma del modelo (polinomio de grado $n=12$), pero en lugar de descenso por gradiente se estimaron los parámetros en una sola etapa usando ecuaciones normales. La diferencia principal respecto al Problema 4 es que aquí se construye explícitamente la matriz polinomial y se resuelve con pseudoinversa.
 
-Se generó un conjunto de datos con $m=100$ puntos equiespaciados y se construyó la matriz de características polinomiales hasta grado $n=12$. A diferencia del Problema 3, los parámetros del modelo se estimaron de forma directa resolviendo el sistema asociado a mínimos cuadrados mediante la pseudoinversa, lo que permite obtener la solución en una sola etapa sin iteraciones.
+\begin{lstlisting}
+n = 12
+X = np.column_stack([x ** j for j in range(n + 1)])
 
-El conjunto de datos se dividió en entrenamiento y prueba (80/20) para evaluar la capacidad de generalización del modelo. El desempeño se midió usando MSE y $R^2$, y se generó una gráfica para comparar visualmente la función real con la aproximación obtenida.
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+
+theta = np.linalg.pinv(X_train.T @ X_train) @ X_train.T @ y_train
+\end{lstlisting}
+
+Las predicciones se obtuvieron multiplicando directamente la matriz de características por el vector de parámetros.
+
+\begin{lstlisting}
+y_test_pred = X_test @ theta
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -418,14 +455,12 @@ En la Figura~\ref{fig:p5_resultados} se observa que la aproximación polinomial 
 
 En comparación con el Problema 3, el uso de ecuaciones normales mejora de forma significativa el ajuste del modelo, eliminando los problemas de convergencia observados con descenso por gradiente. El modelo logra capturar correctamente la forma global de la función.
 
-Sin embargo, al compararlo con el Problema 4, se observa que el desempeño en prueba es inferior, lo cual sugiere una mayor sensibilidad a la cantidad de datos y a la estabilidad numérica del método. Esto es consistente con el hecho de que las ecuaciones normales pueden verse afectadas por matrices mal condicionadas cuando se utilizan bases polinomiales de grado relativamente alto.
+Sin embargo, al compararlo con el Problema 4, se observa que el desempeño en prueba es inferior, lo cual sugiere una mayor sensibilidad a la cantidad de datos y a la estabilidad numérica del método.
 
 % ========================================
 \subsection{Conclusión}
 
 La regresión polinomial resuelta mediante ecuaciones normales permite obtener una buena aproximación de la función sin necesidad de un proceso iterativo de optimización. No obstante, su desempeño en generalización es inferior al obtenido con la implementación de \texttt{sklearn}.
-
-En conclusión, este experimento muestra que, aunque las ecuaciones normales son útiles desde un punto de vista conceptual y educativo, en aplicaciones prácticas resulta preferible emplear implementaciones numéricamente más robustas, especialmente cuando se trabaja con modelos polinomiales de grado elevado.
 
 % ========================================
 % SECCIÓN 6
@@ -436,12 +471,35 @@ En conclusión, este experimento muestra que, aunque las ecuaciones normales son
 
 Considere el problema 3, pero esta vez utilizando un modelo lineal. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
 
-% ========================================
 \subsection{Metodología}
 
-Se utilizó el mismo conjunto de datos sintético definido en el Problema 3, muestreando la función $f(x)=2^{\cos(x^2)}$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. En este problema se sustituyó el modelo polinomial por un modelo estrictamente lineal de la forma $y \approx ax + b$, utilizando \texttt{LinearRegression} de \texttt{sklearn}.
+Se reutilizó el conjunto de datos del Problema 3, pero reemplazando el modelo polinomial por un modelo lineal (\texttt{LinearRegression}). La parte nueva de este problema fue el uso de \texttt{learning\_curve} para graficar curvas de aprendizaje con validación cruzada ($cv=5$), midiendo MSE.
 
-Para analizar el comportamiento del modelo conforme aumenta la cantidad de datos, se calcularon curvas de aprendizaje con validación cruzada de 5 particiones (\texttt{cv=5}) usando la función \texttt{learning\_curve}. Se evaluó el desempeño mediante MSE (implementado como \texttt{neg\_mean\_squared\_error} y posteriormente convertido a positivo). Adicionalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales (MSE y $R^2$) en entrenamiento y prueba, y se generó una gráfica comparando la función real con la aproximación lineal.
+\begin{lstlisting}
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import learning_curve
+
+model_linear = LinearRegression()
+
+train_sizes, train_scores, test_scores = learning_curve(
+    model_linear, x, y, cv=5,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    scoring='neg_mean_squared_error'
+)
+
+train_mse = -train_scores.mean(axis=1)
+test_mse  = -test_scores.mean(axis=1)
+\end{lstlisting}
+
+Adicionalmente, se entrenó un modelo con partición 80/20 para reportar métricas finales.
+
+\begin{lstlisting}
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=42
+)
+model_linear.fit(x_train, y_train)
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -466,14 +524,14 @@ En la Figura~\ref{fig:p6_resultados} se observan (izquierda) las curvas de apren
 % ========================================
 \subsection{Discusión}
 
-Las curvas de aprendizaje muestran que el error de entrenamiento se mantiene bajo y estable, mientras que el error de validación disminuye al aumentar el tamaño del conjunto de entrenamiento, pero se estanca en un valor relativamente alto. Este patrón indica \textbf{alto sesgo} (underfitting): el modelo es demasiado simple para representar la relación entre $x$ y $y$.
+Las curvas de aprendizaje muestran que el error de entrenamiento se mantiene bajo y estable, mientras que el error de validación disminuye al aumentar el tamaño del conjunto de entrenamiento, pero se estanca en un valor relativamente alto. Este patrón indica underfitting: el modelo es demasiado simple para representar la relación entre $x$ y $y$.
 
-La gráfica de la aproximación confirma este comportamiento: el modelo lineal no puede reproducir las variaciones de la función y termina ajustando esencialmente un valor promedio. Por esta razón, agregar más datos no produce una mejora sustancial, ya que la limitación principal es la capacidad del modelo y no la cantidad de información disponible.
+La gráfica de la aproximación confirma este comportamiento, el modelo lineal no puede reproducir las variaciones de la función y termina ajustando esencialmente un valor promedio. Por esta razón, agregar más datos no produce una mejora sustancial, ya que la limitación principal es la capacidad del modelo y no la cantidad de información disponible.
 
 % ========================================
 \subsection{Conclusión}
 
-El modelo lineal no es adecuado para aproximar $f(x)=2^{\cos(x^2)}$ en $[-\pi,\pi]$, ya que presenta underfitting evidente. Las curvas de aprendizaje sugieren que el error de validación se estabiliza incluso al aumentar la cantidad de datos, por lo que la mejora requiere aumentar la capacidad del modelo (por ejemplo, usando características polinomiales o modelos no lineales), en lugar de únicamente incrementar el tamaño del conjunto de entrenamiento.
+El modelo lineal no es adecuado para aproximar $f(x)=2^{\cos(x^2)}$ en $[-\pi,\pi]$, ya que presenta underfitting evidente. Las curvas de aprendizaje sugieren que el error de validación se estabiliza incluso al aumentar la cantidad de datos, por lo que la mejora requiere aumentar la capacidad del modelo, en lugar de únicamente incrementar el tamaño del conjunto de entrenamiento.
 
 
 % ========================================
@@ -489,14 +547,38 @@ f(x) = 2x^2 - 5, \qquad x \in \mathcal{I} = [-\pi, \pi].
 \]
 Use regresión polinomial con \(n = 20\). Grafique las curvas de aprendizaje asociadas. ¿Qué concluye?
 
-% ========================================
 \subsection{Metodología}
 
-Se generó un conjunto de datos sintético muestreando la función $f(x)=2x^2-5$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos equiespaciados. Posteriormente, se construyeron características polinomiales hasta grado $n=20$ usando \texttt{PolynomialFeatures} de \texttt{sklearn}.
+Se generó un conjunto de datos sintético para la función $f(x)=2x^2-5$ con $m=100$ puntos en $[-\pi,\pi]$. Para aproximar la función se usó regresión polinomial con $n=20$. Como el grado es alto, se estandarizaron las características para estabilizar el entrenamiento.
 
-Debido a que las potencias de $x$ pueden tener escalas muy distintas, las características polinomiales fueron estandarizadas con \texttt{StandardScaler}. Para entrenar el modelo se utilizó \texttt{SGDRegressor} con $1000$ iteraciones, lo cual permite controlar el proceso iterativo y mantener consistencia con ejercicios previos donde se usaron métodos iterativos.
+La implementación utiliza \texttt{PolynomialFeatures} para expandir la variable $x$ y \texttt{SGDRegressor} para entrenar iterativamente con un número fijo de iteraciones (1000), lo que permite observar el efecto del entrenamiento.
 
-Para las curvas de aprendizaje se utilizó validación cruzada con $cv=5$ y se evaluó el desempeño con MSE. Finalmente, se entrenó un modelo con partición 80/20 para reportar métricas finales (MSE y $R^2$) y se generó una gráfica comparando la función real con la aproximación obtenida.
+\begin{lstlisting}
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.linear_model import SGDRegressor
+
+n = 20
+poly = PolynomialFeatures(degree=n)
+X_poly = poly.fit_transform(x)
+
+scaler = StandardScaler()
+X_poly_scaled = scaler.fit_transform(X_poly)
+
+model = SGDRegressor(max_iter=1000, tol=1e-6, eta0=0.01, random_state=14)
+\end{lstlisting}
+
+Se calcularon curvas de aprendizaje con \texttt{learning\_curve} (nueva parte relevante en esta sección) usando validación cruzada ($cv=5$) y MSE.
+
+\begin{lstlisting}
+from sklearn.model_selection import learning_curve
+
+train_sizes, train_scores, test_scores = learning_curve(
+    model, X_poly_scaled, y, cv=5,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    scoring='neg_mean_squared_error'
+)
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -522,15 +604,12 @@ En la Figura~\ref{fig:p7_resultados} se muestran (izquierda) las curvas de apren
 
 Las curvas de aprendizaje muestran un error de entrenamiento muy bajo y un error de validación que disminuye conforme crece el tamaño del conjunto de entrenamiento. La separación entre ambas curvas es pequeña, lo cual indica buena generalización y ausencia de sobreajuste relevante, a pesar del alto grado polinomial ($n=20$).
 
-En este caso, el grado $n=20$ es mayor al necesario, ya que un polinomio de grado $2$ sería suficiente para modelar exactamente la función. Sin embargo, el buen desempeño se explica porque (i) los datos siguen una relación polinomial simple y (ii) la estandarización ayuda a la estabilidad numérica durante el entrenamiento con descenso estocástico.
+En este caso, el grado $n=20$ es mayor al necesario, ya que un polinomio de grado $2$ sería suficiente para modelar exactamente la función. Sin embargo, el buen desempeño se explica porque los datos siguen una relación polinomial simple y la estandarización ayuda a la estabilidad numérica durante el entrenamiento con sdg.
 
 % ========================================
 \subsection{Conclusión}
 
 La regresión polinomial con $n=20$ aproxima la función $f(x)=2x^2-5$ con alta precisión, reflejada en MSE muy bajo y $R^2\approx 1$ tanto en entrenamiento como en prueba. Las curvas de aprendizaje confirman que el modelo generaliza correctamente.
-
-Como conclusión, cuando la función objetivo pertenece a la familia polinomial (en este caso cuadrática), el modelo puede lograr un ajuste excelente incluso con grados mayores al necesario. Sin embargo, desde una perspectiva práctica, conviene elegir el menor grado que explique los datos para reducir complejidad y riesgo de inestabilidad numérica.
-
 
 \section{Problema 8}
 
@@ -539,11 +618,15 @@ Como conclusión, cuando la función objetivo pertenece a la familia polinomial 
 Considere el problema 7, pero esta vez use solo 5 iteraciones para el entrenamiento. Dibuje las curvas de aprendizaje asociadas. ¿Qué concluye?
 
 % ========================================
+
 \subsection{Metodología}
 
-Se replicó el experimento del Problema 7 con la misma función objetivo $f(x)=2x^2-5$, el mismo muestreo ($m=100$ puntos en $[-\pi,\pi]$) y el mismo modelo de regresión polinomial con $n=20$ usando \texttt{PolynomialFeatures}. También se mantuvo la estandarización de las características con \texttt{StandardScaler}.
+Se replicó exactamente el experimento del Problema 7 (misma función, mismas características polinomiales $n=20$ y misma estandarización). La única modificación fue reducir el número de iteraciones de entrenamiento del optimizador a 5, con el fin de observar el efecto de un entrenamiento insuficiente.
 
-La única modificación fue reducir el entrenamiento del modelo \texttt{SGDRegressor} a únicamente 5 iteraciones (\texttt{max\_iter=5}). Posteriormente, se calcularon curvas de aprendizaje con validación cruzada (\texttt{cv=5}) usando MSE como métrica, y se reportaron métricas finales en una partición 80/20 para comparar con el caso del Problema 7.
+\begin{lstlisting}
+model = SGDRegressor(max_iter=5, tol=1e-6, eta0=0.01, random_state=14)
+\end{lstlisting}
+
 
 \subsection{Resultados}
 
@@ -571,7 +654,7 @@ La gráfica de la aproximación muestra que el modelo conserva la forma general 
 
 \subsection{Conclusión}
 
-Reducir el entrenamiento a solo 5 iteraciones impide que el modelo alcance una solución adecuada, aun cuando la función objetivo es simple y polinomial. En conclusión, este experimento demuestra que un número insuficiente de iteraciones provoca under-training, y que permitir la convergencia del algoritmo de optimización es tan importante como la elección del modelo y sus características.
+Reducir el entrenamiento a solo 5 iteraciones impide que el modelo alcance una solución adecuada, aun cuando la función objetivo es simple y polinomial. En conclusión, este experimento demuestra que un número insuficiente de iteraciones provoca underfitting, y que permitir la convergencia del algoritmo de optimización es tan importante como la elección del modelo y sus características.
 
 
 % ========================================
@@ -583,14 +666,27 @@ Reducir el entrenamiento a solo 5 iteraciones impide que el modelo alcance una s
 
 Considere el problema 7, pero esta vez, agregue la regularización L2 \cite{sklearnRidge}. Anote sus resultados.
 
-% ========================================
 \subsection{Metodología}
 
-Se retomó el experimento del Problema 7, utilizando la función $f(x)=2x^2-5$ muestreada en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. Se construyeron características polinomiales hasta grado $n=20$ y se aplicó estandarización para mejorar la estabilidad numérica.
+Se reutilizó el pipeline del Problema 7 para construir características polinomiales ($n=20$) y estandarizarlas. El cambio principal fue sustituir el modelo basado en SGD por regresión \texttt{Ridge}, incorporando regularización L2 con $\alpha=1.0$.
 
-A diferencia del Problema 7, el ajuste del modelo se realizó mediante regresión Ridge (regularización L2), usando la implementación \texttt{Ridge} de \texttt{sklearn} con un parámetro de regularización $\alpha=1.0$. Este término penaliza la magnitud de los coeficientes del modelo, con el objetivo de reducir la varianza y evitar soluciones numéricamente inestables.
+\begin{lstlisting}
+from sklearn.linear_model import Ridge
 
-Se calcularon curvas de aprendizaje utilizando validación cruzada con $cv=5$ y MSE como métrica. Finalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales y generar la gráfica de la aproximación.
+model_ridge = Ridge(alpha=1.0)
+model_ridge.fit(X_train, y_train)
+\end{lstlisting}
+
+También se calcularon curvas de aprendizaje usando el mismo procedimiento (validación cruzada $cv=5$ y MSE).
+
+\begin{lstlisting}
+train_sizes, train_scores, test_scores = learning_curve(
+    model_ridge, X_poly_scaled, y, cv=5,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    scoring='neg_mean_squared_error'
+)
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -617,14 +713,12 @@ En la Figura~\ref{fig:p9_resultados} se muestran las curvas de aprendizaje y la 
 
 La regularización L2 permite controlar la magnitud de los coeficientes del polinomio, lo que resulta en un modelo más estable y con mejor comportamiento en generalización. En comparación con el Problema 7, el desempeño sigue siendo excelente, aunque con un ligero incremento en el error de entrenamiento, lo cual es esperado debido al sesgo introducido por la regularización.
 
-A diferencia del Problema 8, donde el entrenamiento insuficiente limitaba el ajuste, aquí el modelo converge adecuadamente y mantiene una buena separación entre las curvas de entrenamiento y validación, evitando tanto el sobreajuste como inestabilidades numéricas.
+A diferencia del Problema 8, donde el entrenamiento insuficiente limitaba el ajuste, aquí el modelo converge adecuadamente y mantiene una buena separación entre las curvas de entrenamiento y validación, evitando tanto el overfitting como inestabilidades numéricas.
 
 % ========================================
 \subsection{Conclusión}
 
 La inclusión de regularización L2 en la regresión polinomial mejora la estabilidad del modelo y mantiene un excelente desempeño predictivo. Aunque introduce un pequeño aumento en el error de entrenamiento, el modelo generaliza de manera consistente y produce una aproximación suave y cercana a la función real.
-
-En conclusión, la regularización es una herramienta clave cuando se trabaja con modelos polinomiales de alto grado, ya que permite balancear adecuadamente la complejidad del modelo y su capacidad de generalización.
 
 
 % ========================================
@@ -636,14 +730,27 @@ En conclusión, la regularización es una herramienta clave cuando se trabaja co
 
 Considere el problema 7, pero esta vez, añada la regularización L1 \cite{sklearnLasso}. Anote sus resultados y compárelos con los del problema 9.
 
-% ========================================
 \subsection{Metodología}
 
-Se repitió el experimento del Problema 7 utilizando la función $f(x)=2x^2-5$ en el intervalo $[-\pi,\pi]$ con $m=100$ puntos. Se generaron características polinomiales hasta grado $n=20$ y se aplicó estandarización para asegurar estabilidad numérica.
+Se mantuvo la misma configuración del Problema 9 (características polinomiales $n=20$ y estandarización). El cambio principal fue sustituir \texttt{Ridge} (L2) por \texttt{Lasso} (L1), con $\alpha=0.1$, para observar el efecto de una regularización que además tiende a hacer cero algunos coeficientes.
 
-El modelo se entrenó mediante regresión Lasso (regularización L1) usando la implementación \texttt{Lasso} de \texttt{sklearn}, con parámetro de regularización $\alpha=0.1$. A diferencia de la regularización L2, L1 tiende a forzar a cero algunos coeficientes, promoviendo soluciones más simples y potencialmente más interpretables.
+\begin{lstlisting}
+from sklearn.linear_model import Lasso
 
-Se calcularon curvas de aprendizaje con validación cruzada (\texttt{cv=5}) usando MSE como métrica. Finalmente, se entrenó el modelo con una partición 80/20 para reportar métricas finales y generar la gráfica de la aproximación.
+model_lasso = Lasso(alpha=0.1, max_iter=1000)
+model_lasso.fit(X_train, y_train)
+\end{lstlisting}
+
+Las curvas de aprendizaje se calcularon igual que en el Problema 9 para mantener comparabilidad directa.
+
+\begin{lstlisting}
+train_sizes, train_scores, test_scores = learning_curve(
+    model_lasso, X_poly_scaled, y, cv=5,
+    train_sizes=np.linspace(0.1, 1.0, 10),
+    scoring='neg_mean_squared_error'
+)
+\end{lstlisting}
+
 
 % ========================================
 \subsection{Resultados}
@@ -670,14 +777,10 @@ En la Figura~\ref{fig:p10_resultados} se observan las curvas de aprendizaje y la
 
 La regularización L1 permite obtener un modelo con excelente capacidad de generalización, manteniendo errores muy bajos en entrenamiento y prueba. En comparación con el Problema 9 (Ridge, L2), el desempeño es ligeramente mejor en términos de MSE, lo que sugiere que L1 es suficiente para controlar la complejidad del modelo en este caso.
 
-Dado que la función objetivo es cuadrática, la regularización L1 tiende a favorecer una representación más simple, eliminando coeficientes innecesarios asociados a grados altos del polinomio. Esto explica por qué el modelo logra un ajuste preciso sin introducir oscilaciones ni inestabilidad numérica.
-
 % ========================================
 \subsection{Conclusión}
 
 La regresión polinomial con regularización L1 proporciona una aproximación muy precisa de la función $f(x)=2x^2-5$, con excelente generalización y errores mínimos. En comparación con la regularización L2, L1 ofrece un ajuste ligeramente más eficiente al promover soluciones más simples.
-
-En conclusión, cuando la función objetivo es inherentemente simple, la regularización L1 resulta especialmente efectiva, ya que reduce la complejidad del modelo sin sacrificar precisión.
 
 
 % ========================================
