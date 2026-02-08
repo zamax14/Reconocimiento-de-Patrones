@@ -4,4 +4,6 @@ seaborn
 notebook
 pandas
 scikit-learn
-pytorch
+kagglehub[pandas-datasets]
+torch
+ipywidgets

@@ -29,7 +29,7 @@ El semestre está dividido en **5 tareas** de **20 puntos** cada una, organizada
 
 ```
 ├── 📁 T01
-│   └── ⚙️ .gitkeep
+│   └── 📄 A1.pdf
 ├── 📁 T02
 │   └── ⚙️ .gitkeep
 ├── 📁 T03
@@ -85,7 +85,7 @@ Cada carpeta de tarea contiene:
 
 | Semana | Enlace |
 |--------|--------|
-| **Semana 01** | TODO |
+| **Semana 01** | [ML 26a Week 1](https://youtube.com/playlist?list=PL66A4_etiRmxlyOSVuqHzYdqeJApEPp5q&si=ZDbC-hFE7PX418k_) |
 | **Semana 02** | TODO |
 | **Semana 03** | TODO |
 | **Semana 04** | TODO |
