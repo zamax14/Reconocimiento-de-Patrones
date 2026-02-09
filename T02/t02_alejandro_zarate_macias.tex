@@ -1,0 +1,162 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true
+}
+
+
+
+\title{Reconocimiento de Patrones (ML) - T02}
+\author{ALEJANDRO ZARATE MACIAS}
+\date{09 de Febrero 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Esta tarea continúa el estudio del aprendizaje supervisado enfocándose en problemas de clasificación. Se implementan y comparan modelos como KNN y Regresión Logística en escenarios de clasificación binaria y multiclase, utilizando métricas adecuadas como F1-score y matrices de confusión para evaluar su desempeño y capacidad de generalización.
+\end{abstract}
+
+
+% ========================================
+% SECCIÓN 1
+% ========================================
+\section{Problema 1}
+
+\subsection{Enunciado}
+Realiza una pequeña investigación para responder a la siguiente pregunta: ¿por qué la función MSE, que antes se utilizaba como función de costo al realizar regresión, ya no se usa comúnmente como función de costo en el escenario de clasificación? Mantén tu respuesta simple.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 2
+% ========================================
+\section{Problema 2}
+
+\subsection{Enunciado}
+Lea el capítulo 4.5 de \cite{James2023ISLP}, centrado en los modelos KNN y de regresión logística.
+¿Cómo se comparan? Escriba sus conclusiones.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 3
+% ========================================
+\section{Problema 3}
+
+\subsection{Enunciado}
+Considere el conjunto de datos de \cite{KaggleHorseSurvivalData}. Cree un script con sklearn para resolver el problema de clasificación binaria asociado con determinar si un caballo determinado sobrevivirá o no. Utilice el modelo KNN de sklearn. Anote todas las suposiciones y operaciones de preprocesamiento de datos que realice. Incorpore la puntuación F1 para explicar sus hallazgos \cite{SklearnF1Score}.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 4
+% ========================================
+\section{Problema 4}
+
+\subsection{Enunciado}
+Repita el problema 3, pero utilice el modelo de regresión logística con sklearn. Compare los resultados con los anteriores. Además, anote los hiperparámetros de optimización que eligió y explique por qué.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 5
+% ========================================
+\section{Problema 5}
+
+\subsection{Enunciado}
+Considere el conjunto de datos de \cite{KaggleAnkursBeerData}. Cree un script con sklearn para resolver el problema de clasificación multiclase asociado con la clasificación de cervezas por estilo. Utilice el modelo KNN. Anote todas las suposiciones y operaciones de preprocesamiento de datos que realice. Investigue qué es una matriz de confusión. Luego, incorpórela a su análisis \cite{SklearnConfusionMatrix}.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 6
+% ========================================
+\section{Problema 6}
+
+\subsection{Enunciado}
+Busque los términos "One Vs One Classifie" y "One Vs Rest Classifie". Luego, repita el problema 5 usando sklearn para los dos enfoques mencionados. Anote todas las suposiciones y conclusiones.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+% ========================================
+% SECCIÓN 7
+% ========================================
+\section{Problema 7}
+
+\subsection{Enunciado}
+Considere la ecuación cuadrática general.
+\[
+ax²+bx+c = 0
+\]
+Esfuércese por clasificar las raíces de la ecuación anterior en función de sus coeficientes. Para simplificar, debe fijar el dominio de x y proponer un dominio adecuado para los coeficientes. Escriba todas sus suposiciones y muestre sus hallazgos mediante gráficos.
+
+\subsection{Metodología}
+
+\subsection{Resultados}
+
+\subsection{Discusión}
+
+\subsection{Conclusión}
+
+
+% ========================================
+% REFERENCIAS
+% ========================================
+\bibliographystyle{plainurl}
+\bibliography{ref}
+
+
+\end{document}
