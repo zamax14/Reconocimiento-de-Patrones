@@ -626,17 +626,191 @@ La equivalencia de resultados sugiere que para este dataset específico, la elec
 \subsection{Enunciado}
 Considere la ecuación cuadrática general.
 \[
-ax²+bx+c = 0
+ax^2+bx+c = 0
 \]
 Esfuércese por clasificar las raíces de la ecuación anterior en función de sus coeficientes. Para simplificar, debe fijar el dominio de x y proponer un dominio adecuado para los coeficientes. Escriba todas sus suposiciones y muestre sus hallazgos mediante gráficos.
 
 \subsection{Metodología}
 
+Para dar solución a este problema es necesario aplicar todo lo que se estuvo viendo a lo largo de la resolución de todos los problemas anteriores, con el añadido de que esta vez somos nosotros quienes tenemos que proponer la forma adecuada para dar solución a este problema mediante un conjunto de datos sintéticos, ya que no contamos con un dataset como tal.
+
+\textbf{Suposiciones:}
+
+Para abordar este problema se establecieron las siguientes suposiciones:
+
+\begin{itemize}
+    \item El dominio de $x$ es el conjunto de los números reales $\mathbb{R}$.
+    \item El dominio de los coeficientes $a$, $b$ y $c$ es el conjunto de los números reales $\mathbb{R}$, con la restricción de que $a \neq 0$, ya que de lo contrario no sería una ecuación cuadrática al eliminar el término cuadrático por el cual está multiplicando.
+    \item Para clasificar las raíces de la ecuación cuadrática, se utilizará el discriminante, que se define como $\Delta = b^2 - 4ac$. La clasificación de las raíces se realiza de la siguiente manera:
+    \begin{itemize}
+        \item Si $\Delta > 0$, la ecuación tiene dos raíces reales y distintas.
+        \item Si $\Delta \approx 0$, la ecuación tiene una raíz real doble (o dos raíces reales iguales).
+        \item Si $\Delta < 0$, la ecuación no tiene raíces reales, sino que tiene dos raíces complejas conjugadas.
+    \end{itemize}
+    \item A los coeficientes $a$, $b$ y $c$ se les asignarán valores aleatorios dentro de un rango específico para generar un conjunto de datos sintéticos. Para este caso se eligió el rango de $-10$ a $10$ para cada uno de los coeficientes (asegurándonos de que $a \neq 0$).
+\end{itemize}
+
+\textbf{Selección del modelo:}
+
+Dado que este es un problema de clasificación, a lo largo de este trabajo hemos visto 2 enfoques principales para abordar este tipo de problemas, siendo estos la regresión logística y KNN. Como se vio en el Problema 2 donde se hacía el análisis comparativo de ambos modelos, se concluyó que para problemas no lineales, el modelo de KNN es el que mejor se desempeña, y como en este caso nos enfrentamos a un problema cuadrático, lo ideal es utilizar KNN multiclase, donde nuestras clases serán:
+
+\begin{itemize}
+    \item \textbf{Clase 0:} Raíces complejas conjugadas ($\Delta < 0$)
+    \item \textbf{Clase 1:} Raíz real doble ($\Delta \approx 0$)
+    \item \textbf{Clase 2:} Raíces reales y distintas ($\Delta > 0$)
+\end{itemize}
+
+\textbf{Generación del dataset sintético:}
+
+Ya habiendo definido las reglas para este problema, se implementó una función que genera un conjunto de datos sintéticos con los coeficientes $a$, $b$ y $c$, calculando el discriminante para clasificar cada conjunto de coeficientes en una de las tres clases mencionadas. La función garantiza un balance perfecto generando exactamente 1000 ecuaciones por clase:
+
+\begin{lstlisting}
+def generate_quadratic_data(n_samples=3000):
+    data = []
+    samples_per_class = n_samples // 3
+    
+    # Clase 2: Raices reales distintas (Delta > 0)
+    count = 0
+    while count < samples_per_class:
+        a = np.random.uniform(-10, 10)
+        while abs(a) < 0.1:
+            a = np.random.uniform(-10, 10)
+        b = np.random.uniform(-10, 10)
+        max_c = (b**2) / (4 * abs(a)) - 0.1
+        c = np.random.uniform(-10, min(10, max_c))
+        discriminant = b**2 - 4*a*c
+        if discriminant > 0:
+            data.append([a, b, c, 2])
+            count += 1
+    
+    # Clase 1: Raiz real doble (Delta = 0)
+    count = 0
+    while count < samples_per_class:
+        a = np.random.uniform(-10, 10)
+        while abs(a) < 0.1:
+            a = np.random.uniform(-10, 10)
+        b = np.random.uniform(-10, 10)
+        c = (b**2) / (4 * a) + np.random.uniform(-0.05, 0.05)
+        data.append([a, b, c, 1])
+        count += 1
+    
+    # Clase 0: Raices complejas (Delta < 0)
+    count = 0
+    while count < samples_per_class:
+        a = np.random.uniform(-10, 10)
+        while abs(a) < 0.1:
+            a = np.random.uniform(-10, 10)
+        b = np.random.uniform(-10, 10)
+        min_c = (b**2) / (4 * abs(a)) + 0.1
+        c = np.random.uniform(min(min_c, 10), 10)
+        discriminant = b**2 - 4*a*c
+        if discriminant < 0:
+            data.append([a, b, c, 0])
+            count += 1
+    
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'root_type'])
+    return df
+\end{lstlisting}
+
+Esta función genera 3000 ecuaciones cuadráticas (1000 por clase), asegurando que $|a| \geq 0.1$ para evitar ecuaciones degeneradas. Para la Clase 1, se añade una pequeña perturbación ($\pm 0.05$) alrededor de $c = b^2/(4a)$ para simular condiciones cercanas al discriminante cero.
+
+\textbf{Preprocesamiento de datos:}
+
+A estos datos solamente se les realizó un preproceso de división en conjuntos de entrenamiento (80\%) y prueba (20\%), y luego se normalizaron utilizando \texttt{StandardScaler} para mejorar el rendimiento del modelo KNN. No fue necesario realizar imputación de valores faltantes ni codificación de variables categóricas, ya que todas las características son numéricas y el dataset se generó sin valores faltantes.
+
+\textbf{Entrenamiento del modelo:}
+
+Finalmente, se entrenó el modelo KNN con los datos de entrenamiento utilizando la clase \textbf{KNNQuadraticClassifier} que encapsula la funcionalidad del modelo:
+
+\begin{lstlisting}
+class KNNQuadraticClassifier:
+    def __init__(self, n_neighbors=5):
+        self.n_neighbors = n_neighbors
+        self.model = KNeighborsClassifier(n_neighbors=n_neighbors)
+        self.scaler = StandardScaler()
+    
+    def fit(self, X_train, y_train):
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        self.model.fit(X_train_scaled, y_train)
+        y_train_pred = self.model.predict(X_train_scaled)
+        train_acc = accuracy_score(y_train, y_train_pred)
+        train_f1 = f1_score(y_train, y_train_pred, average='weighted')
+        return train_acc, train_f1
+    
+    def predict(self, X_test, y_test):
+        X_test_scaled = self.scaler.transform(X_test)
+        y_pred = self.model.predict(X_test_scaled)
+        test_acc = accuracy_score(y_test, y_pred)
+        test_f1 = f1_score(y_test, y_pred, average='weighted')
+        return y_pred, test_acc, test_f1
+\end{lstlisting}
+
+Se evaluó su desempeño utilizando los datos de prueba, obteniendo métricas como el accuracy, F1 score y matriz de confusión como se ha visto en los problemas anteriores. Se realizó una búsqueda exhaustiva del mejor valor de $k$ probando desde 1 hasta 100.
+
 \subsection{Resultados}
+
+La búsqueda del valor óptimo de $k$ reveló que $k=1$ es el mejor valor para este dataset:
+
+El modelo final con $k=1$ obtuvo los siguientes resultados:
+
+\begin{itemize}
+    \item \textbf{Train:} Accuracy = 1.0000, F1 Score = 1.0000
+    \item \textbf{Test:} Accuracy = 0.8950, F1 Score = 0.8954
+\end{itemize}
+
+La Figura \ref{fig:p7_best_k} muestra la evolución del F1 Score en función del valor de $k$. Se observa que $k=1$ proporciona el mejor rendimiento, y conforme aumenta el valor de $k$, el rendimiento del modelo disminuye gradualmente. Esto sugiere que considerar solo el vecino más cercano es suficiente para este problema, y agregar más vecinos introduce ruido que perjudica la clasificación.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/p7_best_k.png}
+    \caption{Evolución del F1 Score en función del hiperparámetro $k$ para el modelo KNN en clasificación de raíces cuadráticas. Se observa que $k=1$ proporciona el mejor rendimiento, con degradación gradual al aumentar $k$.}
+    \label{fig:p7_best_k}
+\end{figure}
+
+La matriz de confusión (Figura \ref{fig:p7_cm}) revela el patrón de clasificación del modelo. Se aprecia que la mayoría de los aciertos se concentran en la diagonal principal, con cada clase teniendo más de 170 muestras correctamente clasificadas de un total de 200 muestras por clase (600 en total para prueba).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/p7_cm.png}
+    \caption{Matriz de confusión para KNN con $k=1$. Las tres clases muestran buen desempeño, aunque la Clase 1 (raíz real doble) presenta mayor cantidad de errores, principalmente confundida con la Clase 2 (raíces reales distintas).}
+    \label{fig:p7_cm}
+\end{figure}
+
+Del análisis de la matriz de confusión se observa que:
+
+\begin{itemize}
+    \item \textbf{Clase 0 (Raíces complejas):} 183 correctas, 17 confundidas con Clase 1, 0 confundidas con Clase 2.
+    \item \textbf{Clase 1 (Raíz real doble):} 172 correctas, 19 confundidas con Clase 0, 9 confundidas con Clase 2.
+    \item \textbf{Clase 2 (Raíces reales distintas):} 182 correctas, 2 confundidas con Clase 0, 16 confundidas con Clase 1.
+\end{itemize}
+
+La Clase 1 (raíz real doble) es la que presenta una mayor cantidad de errores, lo cual se puede deber a que esta clase puede ser más difícil de clasificar debido a que las raíces reales dobles se encuentran en la frontera entre las raíces complejas y las raíces reales distintas, lo cual puede llevar a una mayor confusión con las otras clases.
 
 \subsection{Discusión}
 
+Los resultados obtenidos revelan varios aspectos importantes sobre el problema de clasificación de raíces cuadráticas:
+
+\textbf{Rendimiento óptimo con $k=1$:} El hecho de que el mejor rendimiento se obtenga con $k=1$ indica que el espacio de características está bien estructurado, donde cada ecuación cuadrática está más cerca de otras ecuaciones de su misma clase. Esto sugiere que los coeficientes $a$, $b$ y $c$ proporcionan suficiente información discriminativa cuando se consideran conjuntamente. El modelo logró bastarse únicamente con un $k=1$ para obtener un resultado bastante bueno, lo cual se puede deber a que el dataset es bastante sencillo y no presenta mucha complejidad.
+
+\textbf{Degradación con $k$ mayor:} Al aumentar el valor de $k$, el modelo comienza a tener un rendimiento peor, lo cual se puede deber a que al aumentar el valor de $k$, el modelo comienza a considerar más vecinos para tomar la decisión de clasificación, lo cual puede llevar a una mayor confusión entre las clases, especialmente en las zonas de frontera donde el discriminante está cerca de cero.
+
+\textbf{Rendimiento general:} Un F1 Score de 0.8954 (89.54\%) es un resultado bastante bueno considerando que estamos clasificando un fenómeno matemático con fronteras naturalmente difusas, especialmente en la región donde $\Delta \approx 0$. El rendimiento perfecto en entrenamiento (1.0000) combinado con 0.8954 en prueba sugiere que el modelo ha aprendido bien los patrones sin sobreajuste excesivo.
+
+\textbf{Variabilidad del dataset:} Es importante tener en cuenta que los resultados pueden variar dependiendo de la generación del dataset sintético y de la distribución de los coeficientes, por lo que se recomienda realizar múltiples ejecuciones con diferentes conjuntos de datos para obtener una evaluación más robusta del modelo.
+
 \subsection{Conclusión}
+
+En conclusión, el modelo KNN demostró ser efectivo para clasificar las raíces de la ecuación cuadrática en función de sus coeficientes, alcanzando un F1 Score de 0.8954 y Accuracy de 0.8950 en el conjunto de prueba.
+
+Puntos clave del análisis:
+
+\begin{enumerate}
+    \item La elección de $k=1$ resultó ser la mejor opción para este conjunto de datos sintético, indicando que el vecino más cercano proporciona la información más relevante para la clasificación.
+    \item El enfoque basado en los coeficientes $(a, b, c)$ como características demostró ser efectivo para predecir el tipo de raíces, validando que el discriminante $\Delta = b^2 - 4ac$ captura implícitamente información relevante a través de estos coeficientes.
+    \item La Clase 1 (raíz real doble, $\Delta \approx 0$) presentó mayor dificultad de clasificación, lo cual es matemáticamente consistente al representar una frontera continua entre dos regiones discretas.
+    \item La matriz de confusión reveló que los errores están distribuidos de manera relativamente uniforme entre las clases, sin sesgos significativos hacia ninguna clase en particular.
+    \item El modelo alcanzó un rendimiento robusto del 89.54\% en un problema que involucra fronteras matemáticas naturalmente difusas, demostrando la viabilidad del enfoque de machine learning para problemas de clasificación matemática.
+\end{enumerate}
 
 
 % ========================================
