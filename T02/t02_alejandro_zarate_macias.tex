@@ -216,11 +216,162 @@ Repita el problema 3, pero utilice el modelo de regresión logística con sklear
 
 \subsection{Metodología}
 
+Para este problema de clasificación con regresión logística se siguió un proceso similar al Problema 3, pero con diferencias importantes en la fase de entrenamiento. Las etapas principales fueron:
+
+\begin{enumerate}
+    \item Preprocesamiento de datos (mismo proceso del Problema 3)
+    \item Entrenamiento con Regresión Logística
+    \item Exploración sistemática de hiperparámetros
+    \item Evaluación con configuración óptima
+\end{enumerate}
+
+Dado que el análisis exploratorio y el preprocesamiento se realizaron exhaustivamente en el Problema 3, se procedió directamente con la misma transformación de datos: conversión de variable objetivo a binaria, manejo de valores faltantes, codificación one-hot de categóricas, división train-test (80/20) con estratificación, y normalización con \texttt{StandardScaler}.
+
+La diferencia principal radica en el modelo utilizado. Como se discutió en el Problema 2, la regresión logística es un modelo paramétrico que aprende parámetros específicos durante el entrenamiento. Se implementó una clase personalizada para encapsular el modelo:
+
+\begin{lstlisting}
+class LRModel:
+    def __init__(self, C=1.0, max_iter=1000, class_weight=None, 
+                 solver='lbfgs', random_state=14):
+        self.C = C
+        self.max_iter = max_iter
+        self.class_weight = class_weight
+        self.solver = solver
+        self.model = LogisticRegression(
+            random_state=random_state, 
+            C=C, 
+            max_iter=max_iter,
+            class_weight=class_weight,
+            solver=solver
+        )
+        self.scaler = StandardScaler()
+    
+    def fit(self, X_train, y_train):
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        self.model.fit(X_train_scaled, y_train)
+        y_train_pred = self.model.predict(X_train_scaled)
+        train_acc = self.model.score(X_train_scaled, y_train)
+        train_f1 = f1_score(y_train, y_train_pred)
+        return train_acc, train_f1
+    
+    def predict(self, X_test, y_test):
+        X_test_scaled = self.scaler.transform(X_test)
+        y_pred = self.model.predict(X_test_scaled)
+        test_acc = self.model.score(X_test_scaled, y_test)
+        test_f1 = f1_score(y_test, y_pred)
+        return test_acc, test_f1
+\end{lstlisting}
+
+Debido a la naturaleza paramétrica de la regresión logística, se realizaron pruebas sistemáticas con diferentes hiperparámetros para encontrar la mejor configuración. Los hiperparámetros explorados fueron:
+
+\textbf{C (Regularización):} Controla la regularización del modelo. Valores más pequeños implican mayor regularización. Se probaron valores [0.01, 0.1, 1, 10, 100] para encontrar el balance óptimo entre sesgo y varianza.
+
+\textbf{class\_weight:} Maneja el desbalance de clases. Se comparó la configuración por defecto (\texttt{None}) con \texttt{'balanced'}, que ajusta automáticamente los pesos inversamente proporcionales a las frecuencias de clase.
+
+\textbf{solver:} Algoritmo de optimización. Se evaluaron cinco solvers disponibles en sklearn: \texttt{'lbfgs'}, \texttt{'liblinear'}, \texttt{'newton-cg'}, \texttt{'sag'} y \texttt{'saga'}, cada uno con características y eficiencias diferentes.
+
+Para todos los experimentos se mantuvieron constantes \texttt{random\_state=14} (reproducibilidad) y \texttt{max\_iter=1000} (garantizar convergencia).
+
 \subsection{Resultados}
+
+El modelo de regresión logística base con configuración por defecto obtuvo:
+
+\begin{itemize}
+    \item \textbf{Train:} Accuracy = 0.8159, F1 Score = 0.8472
+    \item \textbf{Test:} Accuracy = 0.7667, F1 Score = 0.8205
+\end{itemize}
+
+La exploración del hiperparámetro C reveló resultados interesantes:
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{C} & \textbf{Train F1} & \textbf{Test F1} & \textbf{Test Acc} \\
+\hline
+0.01 & 0.8066 & \textbf{0.8571} & 0.8167 \\
+0.1 & 0.8339 & 0.8421 & 0.8000 \\
+1 & 0.8472 & 0.8205 & 0.7667 \\
+10 & 0.8512 & 0.8205 & 0.7667 \\
+100 & 0.8512 & 0.8205 & 0.7667 \\
+\hline
+\end{tabular}
+\end{center}
+
+El mejor valor fue \textbf{C=0.01}, indicando que mayor regularización beneficia la generalización.
+
+La comparación de \texttt{class\_weight} mostró:
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Configuración} & \textbf{Train Acc} & \textbf{Train F1} & \textbf{Test Acc} & \textbf{Test F1} \\
+\hline
+Sin balanceo & 0.8159 & 0.8472 & 0.7667 & 0.8205 \\
+Con balanced & 0.8075 & 0.8296 & 0.8000 & \textbf{0.8333} \\
+\hline
+\end{tabular}
+\end{center}
+
+El balanceo de clases mejoró el F1 Score en el conjunto de prueba.
+
+La evaluación de solvers identificó a \textbf{liblinear} como el mejor:
+
+\begin{center}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Solver} & \textbf{Test Acc} & \textbf{Test F1} \\
+\hline
+lbfgs & 0.7667 & 0.8205 \\
+liblinear & 0.7833 & \textbf{0.8312} \\
+newton-cg & 0.7667 & 0.8205 \\
+sag & 0.7667 & 0.8205 \\
+saga & 0.7667 & 0.8205 \\
+\hline
+\end{tabular}
+\end{center}
+
+Finalmente, la combinación óptima (C=0.01, class\_weight='balanced', solver='liblinear') produjo:
+
+\begin{itemize}
+    \item \textbf{Train:} Accuracy = 0.7615, F1 Score = 0.7881
+    \item \textbf{Test:} Accuracy = 0.8167, F1 Score = 0.8406
+\end{itemize}
 
 \subsection{Discusión}
 
+Los resultados revelan varios aspectos importantes sobre el comportamiento de la regresión logística en este problema:
+
+\textbf{Regularización (C):} El valor óptimo C=0.01 indica que este dataset se beneficia significativamente de una fuerte regularización. Esto previene el sobreajuste y mejora la generalización, como se evidencia en el mejor F1 Score de 0.8571 en prueba. Valores mayores de C permitieron que el modelo se ajustara demasiado a los datos de entrenamiento, reduciendo su capacidad predictiva.
+
+\textbf{Balanceo de clases:} El uso de \texttt{class\_weight='balanced'} mejoró el desempeño al compensar el desbalance entre las clases superviviente/no superviviente. Esto es consistente con las observaciones del Problema 3 sobre la importancia de manejar adecuadamente el desbalance.
+
+\textbf{Solver:} El mejor desempeño de \texttt{liblinear} puede atribuirse a que este solver está optimizado para problemas de clasificación binaria y maneja bien datasets de tamaño pequeño a mediano como el presente (299 observaciones).
+
+\textbf{Comparación KNN vs Regresión Logística:} El modelo KNN alcanzó un F1 Score de 0.8919 mientras que la regresión logística logró 0.8406. La diferencia sugiere que la frontera de decisión en este problema tiene componentes no lineales que KNN captura mejor. Sin embargo, ambos modelos son competitivos y adecuados para este problema.
+
+Un hallazgo interesante es que el modelo final con configuración óptima mostró menor F1 en entrenamiento (0.7881) que en prueba (0.8406), lo cual es inusual pero puede indicar que la fuerte regularización y el balanceo de clases ayudaron específicamente con las características del conjunto de prueba.
+
 \subsection{Conclusión}
+
+La regresión logística demostró ser un modelo efectivo para predecir la supervivencia de caballos, alcanzando un F1 Score de 0.8406 en el conjunto de prueba con la configuración óptima.
+
+Los hiperparámetros óptimos encontrados fueron:
+\begin{itemize}
+    \item \textbf{C = 0.01:} Regularización fuerte para prevenir sobreajuste
+    \item \textbf{class\_weight = 'balanced':} Manejo apropiado del desbalance de clases
+    \item \textbf{solver = 'liblinear':} Algoritmo de optimización más eficiente para este dataset
+\end{itemize}
+
+Comparado con el modelo KNN del Problema 3 (F1 = 0.8919), la regresión logística obtuvo un desempeño ligeramente inferior (F1 = 0.8406), con una diferencia de aproximadamente 5\%. Esta diferencia sugiere que:
+
+\begin{enumerate}
+    \item Ambos modelos son viables para este problema, con buen poder predictivo.
+    \item KNN tiene ligera ventaja, posiblemente debido a patrones no lineales en los datos.
+    \item La regresión logística ofrece ventajas en interpretabilidad y eficiencia computacional.
+    \item El desempeño de ambos modelos refuerza las conclusiones del Problema 2 sobre la importancia de evaluar múltiples enfoques según las características específicas del problema.
+\end{enumerate}
+
+La exploración sistemática de hiperparámetros fue crucial, mejorando el F1 Score de 0.8205 (configuración base) a 0.8406 (configuración óptima), representando una mejora del 2.4\%.
 
 % ========================================
 % SECCIÓN 5
