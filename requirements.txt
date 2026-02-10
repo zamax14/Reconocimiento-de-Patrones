@@ -5,5 +5,4 @@ notebook
 pandas
 scikit-learn
 kagglehub[pandas-datasets]
-torch
 ipywidgets

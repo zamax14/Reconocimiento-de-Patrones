@@ -29,18 +29,30 @@ El semestre está dividido en **5 tareas** de **20 puntos** cada una, organizada
 
 ```
 ├── 📁 T01
-│   └── 📄 A1.pdf
+│   ├── 📁 images
+│   │   └── 🖼️ Graficas de resultados
+│   ├── 📕 A1.pdf
+│   ├── 📄 ref.bib
+│   ├── 📄 t01_alejandro_zarate_macias.ipynb
+│   ├── 📕 t01_alejandro_zarate_macias.pdf
+│   └── 📄 t01_alejandro_zarate_macias.tex
 ├── 📁 T02
-│   └── ⚙️ .gitkeep
+│   ├── 📁 images
+│   │   └── 🖼️ Graficas de resultados
+│   ├── 📕 A2.pdf
+│   ├── 📄 ref.bib
+│   ├── 📄 t02_alejandro_zarate_macias.ipynb
+│   ├── 📕 t02_alejandro_zarate_macias.pdf
+│   └── 📄 t02_alejandro_zarate_macias.tex
 ├── 📁 T03
 │   └── ⚙️ .gitkeep
 ├── 📁 T04
 │   └── ⚙️ .gitkeep
 ├── 📁 T05
 │   └── ⚙️ .gitkeep
+├── ⚙️ .gitignore
 ├── 📝 README.md
 ├── 🖼️ cucei_udg.png
-├── ⚙️ .gitignore
 └── 📄 requirements.txt
 ```
 
@@ -57,14 +69,14 @@ Cada carpeta de tarea contiene:
 
 ## 📈 Evaluación
 
-| Componente | Peso |
-|-----------|------|
-| Tarea 1 | 20 puntos |
-| Tarea 2 | 20 puntos |
-| Tarea 3 | 20 puntos |
-| Tarea 4 | 20 puntos |
-| Tarea 5 | 20 puntos |
-| **Total** | **100 puntos** |
+| Componente | Peso | Calificación |
+|-----------|------|-------------|
+| Tarea 1 | 20 puntos | 15 (75/100) |
+| Tarea 2 | 20 puntos | Pendiente... |
+| Tarea 3 | 20 puntos | Pendiente... |
+| Tarea 4 | 20 puntos | Pendiente... |
+| Tarea 5 | 20 puntos | Pendiente... |
+| **Total** | **100 puntos** | **15 puntos** |
 
 
 ## 📚 Libros de Referencia
@@ -86,7 +98,7 @@ Cada carpeta de tarea contiene:
 | Semana | Enlace |
 |--------|--------|
 | **Semana 01** | [ML 26a Week 1](https://youtube.com/playlist?list=PL66A4_etiRmxlyOSVuqHzYdqeJApEPp5q&si=ZDbC-hFE7PX418k_) |
-| **Semana 02** | TODO |
+| **Semana 02** | [ML 26a Week 2](https://youtube.com/playlist?list=PL66A4_etiRmzL5qg7J95xAmdTMJlVwYAZ&si=fBytrtdx4iXnrgwv) |
 | **Semana 03** | TODO |
 | **Semana 04** | TODO |
 | **Semana 05** | TODO |
@@ -101,7 +113,6 @@ Este curso utiliza las siguientes herramientas de Python para análisis de datos
 - **Pandas**: Manipulación y análisis de datos
 - **Seaborn**: Visualización estadística basada en Matplotlib
 - **Scikit-learn**: Herramientas para aprendizaje automático
-- **PyTorch**: Biblioteca para aprendizaje profundo 
 
 ## 🔗 Repositorio
 
