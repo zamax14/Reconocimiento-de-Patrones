@@ -113,7 +113,6 @@ Este curso utiliza las siguientes herramientas de Python para análisis de datos
 - **Pandas**: Manipulación y análisis de datos
 - **Seaborn**: Visualización estadística basada en Matplotlib
 - **Scikit-learn**: Herramientas para aprendizaje automático
-- **PyTorch**: Biblioteca para aprendizaje profundo 
 
 ## 🔗 Repositorio
 
