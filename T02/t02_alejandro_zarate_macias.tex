@@ -532,11 +532,91 @@ Busque los términos "One Vs One Classifie" y "One Vs Rest Classifie". Luego, re
 
 \subsection{Metodología}
 
+Para este problema se busca comparar distintos enfoques para la clasificación multiclase utilizando el mismo dataset de cervezas del Problema 5. Los enfoques a comparar son ``One-vs-One Classifier'' y ``One-vs-Rest Classifier''. Es importante entender qué son estos enfoques:
+
+\textbf{One-vs-One Classifier:} Este enfoque consiste en entrenar un modelo de clasificación binaria para cada par de clases en el dataset. En este caso, dado que tenemos 3 clases (Premium Lager, IPA, Light Lager), este enfoque entrenaría 3 modelos de clasificación binaria:
+\begin{itemize}
+    \item Premium Lager vs IPA
+    \item Premium Lager vs Light Lager
+    \item IPA vs Light Lager
+\end{itemize}
+Para hacer una predicción, se utiliza un sistema de votación donde cada modelo de clasificación binaria emite un voto por la clase que predice, y la clase con más votos es la predicción final.
+
+\textbf{One-vs-Rest Classifier:} Este enfoque consiste en entrenar un modelo de clasificación binaria para cada clase en el dataset, donde cada modelo se entrena para distinguir una clase específica de todas las demás clases combinadas. En este caso, dado que tenemos 3 clases, este enfoque entrenaría 3 modelos de clasificación binaria:
+\begin{itemize}
+    \item Premium Lager vs (IPA + Light Lager)
+    \item IPA vs (Premium Lager + Light Lager)
+    \item Light Lager vs (Premium Lager + IPA)
+\end{itemize}
+Para hacer una predicción, se utiliza un sistema de votación donde cada modelo de clasificación binaria emite un voto por la clase que predice, y la clase con más votos es la predicción final.
+
+Para la implementación de estos enfoques utilizando sklearn, se puede utilizar la clase \textbf{OneVsOneClassifier} para el enfoque One-vs-One y la clase \textbf{OneVsRestClassifier} para el enfoque One-vs-Rest. Ambos enfoques se pueden implementar utilizando el modelo KNN como clasificador base. La manera en la que esto funciona es inicializando la clase \textbf{OneVsOneClassifier} o \textbf{OneVsRestClassifier} y pasando como argumento el modelo KNN, luego se ajusta el modelo con los datos de entrenamiento y se realizan las predicciones con los datos de prueba.
+
+\begin{lstlisting}
+from sklearn.multiclass import OneVsOneClassifier, OneVsRestClassifier
+
+# One-vs-One
+ovo_model = OneVsOneClassifier(KNeighborsClassifier(n_neighbors=k))
+
+# One-vs-Rest
+ovr_model = OneVsRestClassifier(KNeighborsClassifier(n_neighbors=k))
+\end{lstlisting}
+
+Para la parte de implementación, se siguió el mismo enfoque que en el Problema 5, simplemente omitiendo la parte de exploración, ya que esta se realizó en el problema anterior, y se procedió directamente al preprocesamiento de datos, entrenamiento del modelo y evaluación del rendimiento utilizando las mismas métricas que en el Problema 5, incluyendo la matriz de confusión.
+
+Otro cambio en la implementación es la modificación a la clase que se tenía para entrenar/probar KNN multiclase, añadiendo como parámetro el tipo de enfoque a utilizar, siendo este \texttt{'ovo'} para One-vs-One y \texttt{'ovr'} para One-vs-Rest.
+
+Para evitar los problemas de sobreajuste que se presentaron en el Problema 5, se optó por realizar una división del dataset con un 10\% para entrenamiento y un 90\% para prueba, con el fin de tener un modelo que generalice mejor a datos no vistos y no obtener resultados perfectos que puedan ser un indicativo de sobreajuste.
+
 \subsection{Resultados}
+
+Los resultados obtenidos muestran que los 3 enfoques (base vs ovo vs ovr) obtuvieron un rendimiento prácticamente igual:
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline
+\textbf{Estrategia} & \textbf{Train Acc} & \textbf{Train F1} & \textbf{Test Acc} & \textbf{Test F1} \\
+\hline
+standard & 0.8667 & 0.8611 & 0.9259 & 0.9250 \\
+ovr & 0.8667 & 0.8611 & 0.9259 & 0.9250 \\
+ovo & 0.8667 & 0.8611 & 0.9259 & 0.9250 \\
+\hline
+\end{tabular}
+\end{center}
+
+Al analizar las matrices de confusión para los 3 enfoques (Figura \ref{fig:p6_cm_ovo_ovr}), se aprecia que todos cometieron el mismo error de clasificación, clasificando incorrectamente 10 muestras de la clase Premium Lager como Light Lager, lo que se refleja en una matriz de confusión con un único error de clasificación para ambas estrategias.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/p6_cm_ovo_ovr.png}
+    \caption{Matrices de confusión para los tres enfoques (Standard, One-vs-Rest, One-vs-One) con $k=5$. Todos muestran el mismo patrón: 10 muestras de Premium Lager mal clasificadas como Light Lager.}
+    \label{fig:p6_cm_ovo_ovr}
+\end{figure}
 
 \subsection{Discusión}
 
+\textbf{Equivalencia de estrategias:} Los resultados idénticos entre las tres estrategias (estándar, OvO, OvR) se pueden explicar por el hecho de que el dataset es relativamente sencillo de clasificar. El modelo KNN es capaz de clasificar correctamente las muestras de prueba con cualquier enfoque, ya que las clases están relativamente bien separadas en el espacio de características.
+
+\textbf{Impacto de la división train-test:} La estrategia de aumentar drásticamente el tamaño del conjunto de prueba (10/90 en lugar de 80/20) se hizo con el fin de evitar los problemas de sobreajuste que se presentaron en el Problema 5. Esta modificación permitió obtener resultados más realistas (Accuracy de 0.9259 vs 1.0) que reflejan mejor la capacidad del modelo para generalizar a datos no vistos con solo 5 muestras de entrenamiento por clase.
+
+\textbf{Patrón de errores consistente:} Los 10 errores de clasificación ocurrieron consistentemente entre Premium Lager y Light Lager en todos los enfoques. Esto refuerza la observación del Problema 5 sobre la similitud entre estos dos estilos de lager, mientras que la IPA se distingue fácilmente por sus características más distintivas (mayor IBU y ABV).
+
+\textbf{Robustez del modelo:} El hecho de que el modelo mantenga un F1 Score de 0.9250 con solo 15 muestras de entrenamiento demuestra que las características del dataset (OG, ABV, pH, IBU) son lo suficientemente informativas para permitir buena clasificación incluso con muy pocos ejemplos por clase.
+
 \subsection{Conclusión}
+
+Se puede concluir que tanto el enfoque One-vs-One como el enfoque One-vs-Rest son igualmente efectivos para este problema de clasificación multiclase utilizando el modelo KNN, alcanzando un Accuracy de 0.9259 y F1 Score de 0.9250.
+
+Puntos clave:
+
+\begin{enumerate}
+    \item Los tres enfoques (estándar, OvO, OvR) producen resultados idénticos, tanto en métricas como en patrones de error.
+    \item La división 10/90 proporcionó una evaluación más realista de la generalización, evitando los resultados perfectos del Problema 5.
+    \item Los errores ocurrieron consistentemente entre Premium Lager y Light Lager, confirmando la similitud entre estos estilos.
+    \item El modelo KNN demostró robustez significativa, manteniendo desempeño superior al 92\% con solo 5 muestras de entrenamiento por clase.
+\end{enumerate}
+
+La equivalencia de resultados sugiere que para este dataset específico, la elección de la estrategia multiclase no es crítica, pudiendo basarse la selección en consideraciones de eficiencia computacional o interpretabilidad.
 
 % ========================================
 % SECCIÓN 7
