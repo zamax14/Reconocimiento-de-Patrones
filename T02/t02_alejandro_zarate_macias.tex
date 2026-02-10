@@ -42,13 +42,15 @@ Esta tarea continúa el estudio del aprendizaje supervisado enfocándose en prob
 \subsection{Enunciado}
 Realiza una pequeña investigación para responder a la siguiente pregunta: ¿por qué la función MSE, que antes se utilizaba como función de costo al realizar regresión, ya no se usa comúnmente como función de costo en el escenario de clasificación? Mantén tu respuesta simple.
 
-\subsection{Metodología}
+\subsection{Análisis}
+El Mean Squared Error (MSE) ha perdido popularidad en problemas de clasificación principalmente por dos razones fundamentales:
 
-\subsection{Resultados}
+\textbf{1. Naturaleza del error:} MSE calcula el error utilizando valores continuos, lo cual es ideal para modelos de regresión donde el objetivo es predecir un valor continuo. Este enfoque permite ajustes graduales y precisos basados en el error calculado. Sin embargo, en clasificación binaria, el modelo solo puede predecir dos valores discretos (0 o 1), por lo que el cálculo continuo del error de MSE no resulta tan útil para realizar ajustes precisos del modelo. La discrepancia entre la naturaleza continua del error y la naturaleza discreta de las predicciones crea una incompatibilidad fundamental.
 
-\subsection{Discusión}
+\textbf{2. Aparición de funciones más apropiadas:} La llegada de funciones de pérdida basadas en logaritmos, como la entropía cruzada (cross-entropy), marcó un cambio significativo. Estas funciones se adaptan mejor a problemas de clasificación porque penalizan de manera más efectiva los errores cuando el modelo está muy seguro de su predicción pero esta resulta incorrecta. Esta característica es crucial en clasificación, ya que queremos que el modelo sea castigado más severamente por predicciones confiadas pero erróneas, algo que MSE no logra de manera eficiente.
 
 \subsection{Conclusión}
+En resumen, MSE no proporciona resultados tan efectivos como otras funciones de pérdida en problemas de clasificación debido a su naturaleza continua que no se alinea bien con las salidas discretas de clasificación. Por esta razón, funciones como cross-entropy han tomado su lugar como el estándar para este tipo de aplicaciones.
 
 % ========================================
 % SECCIÓN 2
@@ -59,13 +61,29 @@ Realiza una pequeña investigación para responder a la siguiente pregunta: ¿po
 Lea el capítulo 4.5 de \cite{James2023ISLP}, centrado en los modelos KNN y de regresión logística.
 ¿Cómo se comparan? Escriba sus conclusiones.
 
-\subsection{Metodología}
+\subsection{Análisis}
+La Regresión Logística y K-Nearest Neighbors (KNN) son dos enfoques populares para clasificación que, aunque resuelven la misma tarea, lo hacen desde perspectivas muy diferentes:
 
-\subsection{Resultados}
+\textbf{Diferencias fundamentales:}
 
-\subsection{Discusión}
+\textit{Regresión Logística} es un modelo paramétrico que busca encontrar una función que se ajuste a los datos de entrenamiento y pueda predecir la probabilidad de que una observación pertenezca a una clase determinada. Este modelo aprende parámetros específicos durante el entrenamiento que definen la frontera de decisión.
+
+\textit{KNN}, por otro lado, es un modelo no paramétrico basado en la idea de que observaciones similares tienden a pertenecer a la misma clase. Para clasificar una nueva observación, KNN simplemente busca las $k$ observaciones más cercanas en el espacio de características y asigna la clase mayoritaria entre esos vecinos. No hace suposiciones sobre la forma de la función subyacente y utiliza directamente los datos de entrenamiento para hacer predicciones.
+
+\textbf{Resultados experimentales del capítulo:}
+
+El texto presenta varios experimentos comparativos que revelan patrones importantes:
+
+\begin{itemize}
+    \item \textbf{Frontera de decisión lineal:} La regresión logística suele superar a KNN, ya que este último paga un precio innecesario en varianza al no aprovechar la linealidad de la frontera.
+    
+    \item \textbf{Frontera moderadamente no lineal:} Métodos más flexibles como KNN pueden ofrecer mejores resultados al adaptarse mejor a la complejidad de la frontera.
+    
+    \item \textbf{Frontera altamente no lineal:} KNN con una selección adecuada de $K$ puede superar a los métodos lineales, aunque sigue siendo sensible a la elección de este hiperparámetro de suavizamiento.
+\end{itemize}
 
 \subsection{Conclusión}
+No existe un modelo claramente superior entre Regresión Logística y KNN. La elección apropiada depende del tipo de problema que se quiera resolver, la naturaleza de los datos disponibles y, especialmente, la complejidad de la frontera de decisión. Es fundamental evaluar ambos modelos en el contexto específico del problema para determinar cuál es el más adecuado. En general, si esperamos una relación lineal, la regresión logística será más eficiente; si la frontera es compleja y tenemos suficientes datos, KNN puede ser más apropiado.
 
 % ========================================
 % SECCIÓN 3
@@ -77,11 +95,116 @@ Considere el conjunto de datos de \cite{KaggleHorseSurvivalData}. Cree un script
 
 \subsection{Metodología}
 
+Para abordar este problema de clasificación binaria se siguió un enfoque sistemático dividido en cuatro etapas:
+
+\begin{enumerate}
+    \item Carga de datos desde Kaggle
+    \item Exploración inicial
+    \item Preprocesamiento de datos
+    \item Entrenamiento del modelo y evaluaciones
+\end{enumerate}
+
+La carga de datos se realizó empleando funciones de la librería \texttt{kagglehub} disponibles en Python. Posteriormente se procedió a una exploración inicial para entender la estructura de los datos, identificar valores faltantes y analizar la distribución de las clases.
+
+Del análisis inicial se identificó que el dataset contiene 299 observaciones y 28 variables, presentando desafíos importantes: más de la mitad de las columnas tienen valores faltantes y gran parte son categóricas, lo que requiere un preprocesamiento adecuado. La variable objetivo \texttt{outcome} tiene tres valores: \textit{lived} (170 casos), \textit{died} (77 casos) y \textit{euthanized} (44 casos). Para convertir esto en un problema binario, se asignó 1 a ``lived'' y 0 a ``died'' o ``euthanized''. De las 28 columnas, muchas contienen información vital sobre la salud del caballo y signos vitales; sin embargo, se identificaron columnas que no aportan información predictiva relevante como \texttt{hospital\_number}, \texttt{lesion\_1}, \texttt{lesion\_2}, \texttt{lesion\_3} y \texttt{cp\_data}, por lo que fueron eliminadas.
+
+Una vez realizada la exploración inicial, se procedió al preprocesamiento de datos que incluye las siguientes operaciones:
+
+\textbf{Variable objetivo:} Se generó una columna llamada \texttt{outcome\_binary} a partir de la columna \texttt{outcome}:
+\begin{lstlisting}
+# Convertir outcome a binario: lived=1, died/euthanized=0
+df['outcome_binary'] = (df['outcome'] == 'lived').astype(int)
+\end{lstlisting}
+
+\textbf{Manejo de valores faltantes:} Se utilizó \texttt{SimpleImputer} de sklearn, que permite imputar los valores faltantes utilizando la estrategia de la mediana para las variables numéricas y la moda para las variables categóricas:
+\begin{lstlisting}
+imputer_num = SimpleImputer(strategy='median')
+imputer_cat = SimpleImputer(strategy='most_frequent')
+X[numeric_cols] = imputer_num.fit_transform(X[numeric_cols])
+X[categorical_cols] = imputer_cat.fit_transform(X[categorical_cols])
+\end{lstlisting}
+
+\textbf{Codificación de variables categóricas:} Se empleó la función \texttt{get\_dummies} de pandas para convertir las variables categóricas en variables dummy, lo que permite que el modelo KNN pueda procesar esta información de manera adecuada.
+
+\textbf{Separación de datos:} Se dividió el conjunto de datos en entrenamiento (80\%) y prueba (20\%) utilizando \texttt{train\_test\_split} de sklearn, con \texttt{stratify=y} para mantener la proporción de clases y la semilla 14 para garantizar la reproducibilidad.
+
+\textbf{Normalización:} Dado que el modelo KNN es sensible a la escala de las características, se aplicó normalización utilizando \texttt{StandardScaler} de sklearn. Este paso es crucial ya que KNN utiliza distancias para determinar los vecinos más cercanos.
+
+Con todo esto se obtuvo un conjunto de datos limpio y preparado para entrenar el modelo KNN, con 239 observaciones y 41 características para entrenamiento, y 60 observaciones para prueba.
+
+Finalmente, se entrenó el modelo KNN utilizando la clase \texttt{KNeighborsClassifier} de sklearn. Se implementó una clase personalizada que encapsula el modelo y facilita el entrenamiento y evaluación:
+
+\begin{lstlisting}
+class KNNModel:
+    def __init__(self, n_neighbors=3):
+        self.n_neighbors = n_neighbors
+        self.model = KNeighborsClassifier(n_neighbors=self.n_neighbors)
+        self.scaler = StandardScaler()
+    
+    def fit(self, X_train, y_train):
+        # Entrenamiento
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        self.model.fit(X_train_scaled, y_train)
+        # Metricas
+        y_train_pred = self.model.predict(X_train_scaled)
+        train_acc = self.model.score(X_train_scaled, y_train)
+        train_f1 = f1_score(y_train, y_train_pred)
+        return train_acc, train_f1
+    
+    def predict(self, X_test, y_test):
+        # Prediccion
+        X_test_scaled = self.scaler.transform(X_test)
+        y_pred = self.model.predict(X_test_scaled)
+        # Metricas
+        test_acc = self.model.score(X_test_scaled, y_test)
+        test_f1 = f1_score(y_test, y_pred)
+        return test_acc, test_f1
+\end{lstlisting}
+
+Se comenzó con un valor de $k=5$, el cual es el valor por defecto que utiliza la función de acuerdo a la documentación oficial, con el objetivo de evaluar cómo se desempeña el modelo en su configuración base. Adicionalmente, se realizaron pruebas con distintos valores de $k$ (desde 1 hasta 100) para evaluar el desempeño del modelo y encontrar el valor óptimo según el F1 Score.
+
 \subsection{Resultados}
+
+Los resultados obtenidos del modelo KNN base con $k=5$ fueron los siguientes:
+
+\begin{itemize}
+    \item \textbf{Train:} Accuracy = 0.7992, F1 Score = 0.8367
+    \item \textbf{Test:} Accuracy = 0.8000, F1 Score = 0.8378
+\end{itemize}
+
+Estos resultados iniciales muestran un desempeño bastante aceptable en ambos conjuntos de entrenamiento y prueba, con valores similares que sugieren buena generalización del modelo.
+
+La búsqueda exhaustiva probando valores de $k$ desde 1 hasta 100 reveló que $k=16$ es el valor óptimo:
+
+\begin{itemize}
+    \item \textbf{Mejor $k$ según Accuracy:} 16 (Accuracy: 0.8667)
+    \item \textbf{Mejor $k$ según F1 Score:} 16 (F1 Score: 0.8919)
+\end{itemize}
+
+La Figura \ref{fig:p3_knn_performance} muestra la evolución del desempeño del modelo en función de $k$. Se observa que valores muy pequeños de $k$ (cercanos a 1) producen sobreajuste con alta varianza, mientras que valores muy grandes resultan en subajuste al suavizar excesivamente la frontera de decisión. El punto óptimo en $k=16$ representa el mejor balance entre sesgo y varianza para este conjunto de datos específico.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/p3.png}
+    \caption{Evolución del Accuracy y F1 Score en función del hiperparámetro $k$ para el modelo KNN. La estrella roja indica el valor óptimo $k=16$.}
+    \label{fig:p3_knn_performance}
+\end{figure}
 
 \subsection{Discusión}
 
+La mejora del F1 Score de 0.8378 a 0.8919 (incremento del 6.5\%) al optimizar $k$ demuestra la importancia de la selección adecuada de hiperparámetros. El F1 Score es particularmente relevante en este problema debido al desbalance de clases (170 supervivientes vs 121 no supervivientes), ya que considera tanto precisión como recall, evitando sesgos hacia la clase mayoritaria.
+
+El valor óptimo $k=16$ sugiere que considerar aproximadamente 16 vecinos cercanos proporciona suficiente información para decisiones robustas sin incluir ruido de observaciones muy distantes. Valores menores ($k<5$) muestran mayor varianza y sensibilidad a outliers, mientras que valores mayores ($k>30$) tienden a suavizar demasiado la frontera de decisión.
+
+Es notable que tanto Accuracy como F1 Score coinciden en identificar $k=16$ como óptimo, lo cual refuerza la confianza en esta configuración. Sin embargo, el F1 Score proporciona una evaluación más completa del desempeño en este contexto de clases desbalanceadas.
+
 \subsection{Conclusión}
+
+El modelo KNN demostró ser muy efectivo para predecir la supervivencia de caballos, alcanzando un F1 Score de 0.8919 y Accuracy de 0.8667 en el conjunto de prueba con $k=16$. 
+
+El valor óptimo de $k$ encontrado fue 16, lo que sugiere que este valor es el más adecuado para este conjunto de datos específico. La mejora de 0.8378 a 0.8919 en el F1 Score representa un incremento del 6.5\%, lo que demuestra una mejora significativa en la capacidad del modelo para predecir correctamente la supervivencia de los caballos comparado con la configuración por defecto.
+
+Es importante destacar que, comparado con el accuracy tradicional, el F1 Score proporciona una mejor perspectiva del desempeño del modelo, especialmente en este contexto donde existe desbalance de clases (170 supervivientes vs 121 no supervivientes). 
 
 % ========================================
 % SECCIÓN 4
