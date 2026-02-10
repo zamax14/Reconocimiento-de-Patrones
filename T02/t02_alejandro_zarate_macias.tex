@@ -383,11 +383,144 @@ Considere el conjunto de datos de \cite{KaggleAnkursBeerData}. Cree un script co
 
 \subsection{Metodología}
 
+Para resolver este problema de clasificación multiclase se siguió un proceso similar al Problema 3, con la variación de que ahora se trata de clasificar múltiples clases y se incorpora una nueva métrica de evaluación: la matriz de confusión. Las etapas del proceso fueron:
+
+\begin{enumerate}
+    \item Carga del dataset 'beer.csv' desde Kaggle
+    \item Exploración de datos para entender su estructura y contenido
+    \item Preprocesamiento de datos
+    \item Entrenamiento del modelo KNN para clasificación multiclase
+    \item Evaluación del modelo utilizando métricas de rendimiento, incluyendo la matriz de confusión
+\end{enumerate}
+
+\textbf{Matriz de confusión:} Antes de proceder con la implementación, es importante entender esta nueva métrica. La matriz de confusión es una herramienta que se utiliza para evaluar el rendimiento de un modelo de clasificación. Es una tabla que muestra las predicciones del modelo en comparación con las etiquetas reales. En clasificación binaria, se compone de cuatro elementos principales: Verdaderos Positivos (TP), Falsos Positivos (FP), Verdaderos Negativos (TN) y Falsos Negativos (FN). Estos elementos se utilizan para calcular métricas como la precisión, la sensibilidad y la especificidad del modelo. En el caso de un problema de clasificación multiclase, la matriz de confusión se extiende para incluir todas las clases posibles, lo que permite evaluar el rendimiento del modelo en cada clase individualmente.
+
+Durante la fase de carga y exploración de datos, se identificó que el dataset cuenta con 150 observaciones y 6 columnas. La variable objetivo \texttt{style} representa el estilo de cerveza, con tres clases balanceadas:
+\begin{itemize}
+    \item Premium Lager (50 muestras)
+    \item IPA (50 muestras)
+    \item Light Lager (50 muestras)
+\end{itemize}
+Las características disponibles son:
+\begin{itemize}
+    \item Brew No: Número de lote de la cerveza
+    \item OG: Gravedad original (cantidad de azúcar fermentable antes de la fermentación)
+    \item BV: Alcohol por volumen
+    \item pH: Acidez de la cerveza
+    \item IBU: Indicador del amargor de la cerveza
+\end{itemize}
+
+De estas características, solo \texttt{Brew No.} no aporta información relevante al ser un valor consecutivo, por lo que fue eliminada. Las demás no presentan valores faltantes y están todas en formato numérico, por lo que no requieren transformaciones adicionales.
+
+El preprocesamiento consistió en:
+
+\textbf{División de datos:} Se separaron características y variable objetivo, eliminando \texttt{Brew No.}. Se realizó división train-test (80/20) con \texttt{stratify=y} para mantener el balance de clases, resultando en 120 muestras para entrenamiento y 30 para prueba.
+
+\textbf{Normalización:} Se aplicó \texttt{StandardScaler} para normalizar las características, crucial para KNN por su sensibilidad a la escala.
+
+Para el entrenamiento se utilizó la misma clase \texttt{KNNModelMulticlass} que extiende el modelo base para clasificación multiclase:
+
+\begin{lstlisting}
+class KNNModelMulticlass:
+    def __init__(self, n_neighbors=3):
+        self.n_neighbors = n_neighbors
+        self.model = KNeighborsClassifier(n_neighbors=self.n_neighbors)
+        self.scaler = StandardScaler()
+    
+    def fit(self, X_train, y_train):
+        X_train_scaled = self.scaler.fit_transform(X_train)
+        self.model.fit(X_train_scaled, y_train)
+        y_train_pred = self.model.predict(X_train_scaled)
+        train_acc = self.model.score(X_train_scaled, y_train)
+        train_f1 = f1_score(y_train, y_train_pred, average='weighted')
+        return train_acc, train_f1
+    
+    def predict(self, X_test, y_test):
+        X_test_scaled = self.scaler.transform(X_test)
+        y_pred = self.model.predict(X_test_scaled)
+        test_acc = self.model.score(X_test_scaled, y_test)
+        test_f1 = f1_score(y_test, y_pred, average='weighted')
+        return y_pred, test_acc, test_f1
+\end{lstlisting}
+
+Se utilizó \texttt{average='weighted'} en el cálculo del F1 Score para considerar el peso de cada clase en problemas multiclase. Se probó inicialmente con $k=5$ (configuración base) y posteriormente se exploraron valores de $k$ desde 1 hasta 50 para encontrar el óptimo.
+
 \subsection{Resultados}
+
+El modelo KNN base con $k=5$ obtuvo resultados excepcionales:
+
+\begin{itemize}
+    \item \textbf{Train:} Accuracy = 1.0000, F1 Score = 1.0000
+    \item \textbf{Test:} Accuracy = 1.0000, F1 Score = 1.0000
+\end{itemize}
+
+Este resultado perfecto sugiere que el dataset es relativamente sencillo de clasificar o podría indicar sobreajuste.
+
+La búsqueda del valor óptimo de $k$ reveló que a partir de $k=2$ se obtiene un rendimiento perfecto (Accuracy y F1 Score de 1.0000). El único valor que obtuvo un rendimiento ligeramente inferior fue $k=1$:
+
+\begin{itemize}
+    \item \textbf{$k=1$:} Test Accuracy = 0.9667, Test F1 Score = 0.9667
+    \item \textbf{$k \geq 2$:} Test Accuracy = 1.0000, Test F1 Score = 1.0000
+\end{itemize}
+
+La Figura \ref{fig:p5_best_k} muestra la evolución del desempeño del modelo. Se observa que $k=1$ tiene un pequeño error, pero a partir de $k=2$ el modelo alcanza perfección total y se mantiene constante.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/p5_best_k.png}
+    \caption{Evolución del Accuracy y F1 Score en función del hiperparámetro $k$ para el modelo KNN multiclase. Se observa rendimiento perfecto desde $k=2$ en adelante.}
+    \label{fig:p5_best_k}
+\end{figure}
+
+Dado que analizar la matriz de confusión es la parte más importante de este problema, se compararon las matrices para $k=1$ y $k=2$. La Figura \ref{fig:p5_cm_k1} muestra que para $k=1$, el modelo cometió un error de clasificación: una muestra de la clase ``Light Lager'' fue incorrectamente clasificada como ``Premium Lager''. Esto se refleja en la matriz de confusión donde Light Lager tiene 9 predicciones correctas en lugar de 10.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/p5_cm_k1.png}
+    \caption{Matriz de confusión para KNN con $k=1$. Se observa un error en la clasificación de Light Lager, confundida con Premium Lager.}
+    \label{fig:p5_cm_k1}
+\end{figure}
+
+Por otro lado, la Figura \ref{fig:p5_cm_best_k} muestra la matriz de confusión para $k=2$, donde todas las muestras fueron clasificadas correctamente. La diagonal principal contiene todos los valores predichos correctamente (10 para cada clase), sin errores de clasificación fuera de la diagonal.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/p5_cm_best_k.png}
+    \caption{Matriz de confusión para KNN con $k=2$ (valor óptimo). Todas las muestras fueron clasificadas correctamente, resultando en una matriz de confusión perfecta.}
+    \label{fig:p5_cm_best_k}
+\end{figure}
 
 \subsection{Discusión}
 
+Los resultados excepcionales obtenidos revelan varios aspectos importantes:
+
+\textbf{Rendimiento perfecto desde $k=2$:} Las características del dataset (OG, ABV, pH, IBU) son altamente discriminativas, permitiendo que las tres clases estén bien separadas en el espacio de características. Solo 2 vecinos cercanos son suficientes para clasificación perfecta.
+
+\textbf{Error de $k=1$:} La única muestra mal clasificada fue una Light Lager confundida con Premium Lager, indicando un punto cercano a la frontera entre estas clases. La votación con $k=2$ corrige este error.
+
+\textbf{Matriz de confusión:} El error entre Light Lager y Premium Lager es comprensible, ya que ambos lagers comparten características similares (bajo IBU y ABV). La IPA, al ser más distintiva, no presentó errores.
+
+\textbf{Dataset sencillo vs sobreajuste:} El rendimiento perfecto con múltiples valores de $k$ (2 a 50) sugiere que el dataset es naturalmente separable, no sobreajuste. Un modelo sobreajustado mostraría degradación con $k$ mayores.
+
+\textbf{Balance de clases:} Las 50 muestras por clase facilitaron el entrenamiento sin sesgos, mantenido mediante \texttt{stratify} en la división train-test.
+
 \subsection{Conclusión}
+
+El modelo KNN demostró ser extremadamente efectivo para clasificar los estilos de cerveza en este dataset, alcanzando un rendimiento perfecto (Accuracy y F1 Score de 1.0000) con $k \geq 2$. 
+
+La matriz de confusión demostró ser una herramienta fundamental para entender el comportamiento del modelo en cada clase individual. Permitió identificar que el único error de clasificación con $k=1$ ocurrió entre Light Lager y Premium Lager, dos estilos que comparten características similares al ser ambos lagers.
+
+Puntos clave del análisis:
+
+\begin{enumerate}
+    \item El valor óptimo encontrado fue $k=2$, que proporciona clasificación perfecta con el mínimo número de vecinos necesario.
+    \item Las características del dataset (OG, ABV, pH, IBU) son altamente discriminativas para los tres estilos de cerveza.
+    \item La matriz de confusión reveló que IPA es la clase más fácilmente distinguible, sin errores en ninguna configuración.
+    \item El error único con $k=1$ entre Light Lager y Premium Lager sugiere que estos estilos tienen mayor similitud en el espacio de características.
+    \item El rendimiento perfecto con múltiples valores de $k$ sugiere que el dataset es naturalmente separable más que indicativo de sobreajuste.
+\end{enumerate}
+
+Es importante mencionar que, aunque el resultado perfecto es alentador, sería recomendable realizar validación cruzada para confirmar la robustez del modelo en diferentes particiones de los datos. Adicionalmente, podría considerarse usar una proporción menor para entrenamiento (ej. 70/30 o 60/40) para evaluar si el modelo mantiene su capacidad predictiva con menos datos de entrenamiento.
 
 % ========================================
 % SECCIÓN 6
