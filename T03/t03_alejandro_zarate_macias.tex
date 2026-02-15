@@ -30,7 +30,7 @@
 \maketitle
 
 \begin{abstract}
-
+Esta tarea avanza el estudio del aprendizaje supervisado explorando modelos más complejos como Redes Neuronales y Máquinas de Vectores de Soporte (SVM). Se implementan ambos modelos en problemas de regresión y clasificación, tanto en conjuntos de datos reales como en funciones analíticas. Se analiza el proceso de backpropagation, se comparan con métodos de aproximación de gradientes, y se evalúa el desempeño de ambos modelos bajo diferentes hiperparámetros y configuraciones. Finalmente, se examina la interpretabilidad de los modelos y la importancia de la regularización en la generalización.
 \end{abstract}
 
 % ========================================
@@ -40,11 +40,32 @@
 
 \subsection{Enunciado}
 
-Lea la sección 5 de \cite{higham2018deeplearningintroductionapplied} para comprender cómo se calculan las derivadas parciales de las redes neuronales (NN) con respecto a los pesos y el sesgo mediante retropropagación. En particular, sklearn utiliza esta última durante la fase de entrenamiento. Escriba las ventajas y desventajas de usar la retropropagación para calcular gradientes en comparación con las diferencias finitas.
+Lea la sección 5 de \cite{higham2018deeplearningintroductionapplied} para comprender cómo se calculan las derivadas parciales de las redes neuronales (NN) con respecto a los pesos y el sesgo mediante backpropagation. En particular, sklearn utiliza esta última durante la fase de entrenamiento. Escriba las ventajas y desventajas de usar backpropagation para calcular gradientes en comparación con las diferencias finitas.
 
 \subsection{Análisis}
 
+Actualmente, backpropagation es el método más utilizado para calcular gradientes en redes neuronales debido a su eficiencia. Comparada con las diferencias finitas, presenta varias ventajas y algunas desventajas.
+
+\textbf{Ventajas de backpropagation:}
+\begin{itemize}
+    \item Es mucho más eficiente computacionalmente. Mientras que las diferencias finitas necesitan evaluar la función de costo varias veces (una por cada parámetro), backpropagation calcula todos los gradientes en un solo proceso de propagación hacia adelante y hacia atrás.
+    \item Calcula gradientes exactos (salvo pequeños errores numéricos), ya que utiliza directamente la regla de la cadena. En cambio, las diferencias finitas solo aproximan el gradiente y su precisión depende del tamaño del paso elegido.
+    \item Es escalable a redes profundas con muchos parámetros. Las diferencias finitas se vuelven muy costosas cuando el número de parámetros es grande.
+\end{itemize}
+
+\textbf{Desventajas de backpropagation:}
+\begin{itemize}
+    \item Es más compleja de implementar, ya que requiere entender cómo aplicar correctamente la regla de la cadena en cada capa de la red.
+    \item Necesita almacenar valores intermedios durante la propagación hacia adelante para poder calcular los gradientes después, lo que implica un mayor uso de memoria.
+    \item Solo puede aplicarse cuando las funciones de la red son diferenciables, mientras que las diferencias finitas pueden utilizarse incluso si no se conocen las derivadas de forma explícita.
+\end{itemize}
+
 \subsection{Conclusión}
+
+En resumen, backpropagation es claramente superior para entrenar redes neuronales debido a su eficiencia y capacidad de escalar a modelos grandes. Aunque es más compleja de implementar y requiere más memoria, las diferencias finitas resultan imprácticas en redes con muchos parámetros.
+
+Sin embargo, las diferencias finitas pueden ser útiles para verificar si los gradientes implementados mediante backpropagation son correctos en redes pequeñas.
+
 
 % ========================================
 % SECCIÓN 2
@@ -146,7 +167,7 @@ Haz todo lo posible por clasificar las raíces de la ecuación anterior en funci
 
 \subsection{Enunciado}
 
-Considere el problema 3 con una red neuronal compuesta por una sola capa oculta con tres neuronas, funciones de activación logística para dichas neuronas y una función de activación lineal en la neurona de la capa de salida. Sea $x$ un punto aleatorio en $[-\pi, \pi]$. Con un script en Python, calcule y compare el gradiente de la red neuronal en $x$ mediante diferencias finitas centrales y retropropagación. Deberá utilizar las fórmulas del problema 1. Anote sus hallazgos y suposiciones.
+Considere el problema 3 con una red neuronal compuesta por una sola capa oculta con tres neuronas, funciones de activación logística para dichas neuronas y una función de activación lineal en la neurona de la capa de salida. Sea $x$ un punto aleatorio en $[-\pi, \pi]$. Con un script en Python, calcule y compare el gradiente de la red neuronal en $x$ mediante diferencias finitas centrales y backpropagation. Deberá utilizar las fórmulas del problema 1. Anote sus hallazgos y suposiciones.
 
 \subsection{Metodología}
 
