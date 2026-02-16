@@ -78,11 +78,117 @@ Considere el conjunto de datos de \cite{kaggleFuel2022}. Cree un script de Pytho
 
 \subsection{Metodología}
 
+Para resolver este problema se parte de la base del problema de regresión realizado en la Tarea 1, donde se entrenó un modelo de regresión lineal simple para predecir el consumo de combustible en ciudad y carretera a partir de características de distintos vehículos. En esta ocasión, se utiliza una red neuronal (\texttt{MLPRegressor}) para abordar el mismo problema.
+
+\subsubsection{Exploración y limpieza de datos}
+
+El dataset contiene 946 registros con 15 columnas. No se encontraron valores nulos, lo cual evita la necesidad de un proceso de imputación o eliminación de datos faltantes.
+
+Las variables objetivo son \texttt{Fuel Consumption (City (L/100 km)} y \texttt{Fuel Consumption(Hwy (L/100 km))}, que representan el consumo de los vehículos en ciudad y carretera, respectivamente.
+
+\subsubsection{Selección de características}
+
+Del conjunto original de variables, se descartaron aquellas que no aportan información útil o que introducen variabilidad excesiva en el modelo:
+
+\begin{itemize}
+    \item \textbf{CO2 Emissions(g/km), CO2 Rating, Smog Rating:} aunque están relacionadas con el consumo de combustible, no aportan información directa para predecirlo, ya que son más bien consecuencias del consumo.
+    \item \textbf{Model, Make:} generan demasiada variabilidad al tener muchas categorías únicas, lo cual complica el modelo sin mejorar significativamente su desempeño.
+    \item \textbf{Model Year:} todos los registros corresponden al año 2022, por lo que esta variable no aporta información discriminante.
+\end{itemize}
+
+Las variables seleccionadas como características de entrada fueron:
+
+\begin{itemize}
+    \item \textbf{Numéricas:} \texttt{Engine Size(L)}, \texttt{Cylinders}
+    \item \textbf{Categóricas:} \texttt{Vehicle Class}, \texttt{Transmission}, \texttt{Fuel Type}
+\end{itemize}
+
+\subsubsection{Preprocesamiento}
+
+Para poder utilizar las variables categóricas dentro del modelo, se aplicó codificación one-hot mediante la función \texttt{pd.get\_dummies}, eliminando la primera categoría de cada variable para evitar multicolinealidad. Esto transformó el dataset de 5 variables originales a 40 variables numéricas.
+
+\begin{lstlisting}
+X = df[['Engine Size(L)', 'Cylinders', 
+        'Vehicle Class', 'Transmission', 'Fuel Type']]
+
+X = pd.get_dummies(X, 
+    columns=['Vehicle Class', 'Transmission', 'Fuel Type'], 
+    drop_first=True)
+\end{lstlisting}
+
+Posteriormente, se separó el dataset en conjuntos de entrenamiento (80\%) y prueba (20\%), lo cual generó 756 registros para entrenamiento y 190 para prueba.
+
+\begin{lstlisting}
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=14)
+\end{lstlisting}
+
+\subsubsection{Configuración del modelo}
+
+Se utilizó la clase \texttt{MLPRegressor} de scikit-learn para entrenar un modelo por cada variable objetivo (ciudad y carretera). Los hiperparámetros seleccionados fueron los siguientes:
+
+\begin{lstlisting}
+model = MLPRegressor(
+    loss='squared_error',
+    hidden_layer_sizes=(200,), 
+    activation='relu', 
+    solver='adam', 
+    max_iter=1500, 
+    tol=1e-4,
+    random_state=14
+)
+\end{lstlisting}
+
+La justificación de cada hiperparámetro es la siguiente:
+
+\begin{itemize}
+    \item \texttt{loss='squared\_error'}: el error cuadrático medio (MSE) es la métrica más común para evaluar modelos de regresión, y es la función de pérdida natural para este tipo de problemas.
+    \item \texttt{hidden\_layer\_sizes=(200,)}: se utiliza una sola capa oculta con 200 neuronas, un valor razonable considerando que el dataset tiene 40 características después de la codificación one-hot.
+    \item \texttt{activation='relu'}: la función ReLU devuelve el valor de entrada si es positivo y cero en caso contrario, lo que permite al modelo aprender patrones no lineales en los datos.
+    \item \texttt{solver='adam'}: Adam es un algoritmo de optimización adaptativo ampliamente utilizado para entrenar redes neuronales. Es una buena opción por defecto para este tipo de problemas.
+    \item \texttt{max\_iter=1500}: tras varias pruebas, se observó que con el valor por defecto de 1000 iteraciones el modelo no convergía, por lo que se incrementó este valor.
+    \item \texttt{tol=1e-4}: se probaron valores más pequeños de tolerancia para intentar que el modelo convergiera antes, pero esto no funcionó, por lo que se mantuvo el valor por defecto.
+    \item \texttt{random\_state=14}: se fijó una semilla para asegurar la reproducibilidad de los resultados.
+\end{itemize}
+
 \subsection{Resultados}
+
+Las métricas de evaluación obtenidas en el conjunto de prueba se resumen en la Tabla \ref{tab:p2_resultados}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccc}
+\hline
+\textbf{Modelo} & \textbf{MSE} & \textbf{RMSE} & $\mathbf{R^2}$ \\
+\hline
+Ciudad    & 1.1425 & 1.0689 & 0.8884 \\
+Carretera & 0.7083 & 0.8416 & 0.8329 \\
+\hline
+\end{tabular}
+\caption{Métricas de evaluación para los modelos de consumo en ciudad y carretera.}
+\label{tab:p2_resultados}
+\end{table}
+
+La Figura \ref{fig:p2} muestra las gráficas de predicciones contra valores reales para ambos modelos. La línea roja punteada representa la predicción perfecta (donde el valor predicho es igual al real).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/p2.png}
+    \caption{Predicciones vs valores reales para los modelos de consumo en ciudad (izquierda) y carretera (derecha).}
+    \label{fig:p2}
+\end{figure}
 
 \subsection{Discusión}
 
+Los resultados muestran un buen desempeño en ambos modelos. El modelo de ciudad obtuvo un $R^2$ de 0.8884, lo que significa que explica aproximadamente el 88.84\% de la variabilidad de los datos. El modelo de carretera alcanzó un $R^2$ de 0.8329, explicando el 83.29\%.
+
+En cuanto al error, el modelo de ciudad presenta un RMSE de 1.0689, lo que indica que en promedio las predicciones se desvían aproximadamente 1.07 L/100 km del valor real. Por su parte, el modelo de carretera tiene un RMSE menor de 0.8416, lo que sugiere mayor precisión promedio en sus predicciones.
+
+Resulta interesante notar que, aunque el modelo de ciudad explica una mayor proporción de la variabilidad, el modelo de carretera presenta menor error promedio. Esta diferencia puede deberse a variaciones en la dispersión o escala de los datos en cada caso. En las gráficas de la Figura \ref{fig:p2} se puede observar que los puntos se agrupan de forma cercana a la línea de predicción perfecta en ambos casos, con mayor dispersión en los valores altos de consumo.
+
 \subsection{Conclusión}
+
+Ambos modelos pueden considerarse adecuados para este problema, ya que explican más del 80\% de la variabilidad y presentan errores relativamente bajos. La red neuronal con una sola capa oculta de 200 neuronas demuestra ser capaz de capturar las relaciones no lineales entre las características de los vehículos y su consumo de combustible, mejorando los resultados obtenidos previamente con regresión lineal simple.
 
 % ========================================
 % SECCIÓN 3
