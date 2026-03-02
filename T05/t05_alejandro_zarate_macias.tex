@@ -46,11 +46,37 @@ Lea \cite{featureSelectionMethods} sobre los métodos de la familia de selecció
 
 \subsection{Análisis}
 
-% TODO
+\textit{Nota: el blog de Medium referenciado en \cite{featureSelectionMethods} se encontraba caído al momento de consulta. Se utilizó como fuente alternativa el artículo de IBM \cite{featureSelectionIBM}, que cubre una amplia variedad de métodos de manera detallada.}
+
+
+Existen cuatro familias principales de métodos para selección de características:
+
+
+\textbf{Métodos de Filtrado:} Evalúan cada característica de manera independiente, sin involucrar ningún modelo. Usan criterios estadísticos como correlación de Pearson, Chi-cuadrado o ganancia de información para descartar variables poco relevantes. Son muy rápidos y fáciles de aplicar, lo que los hace ideales como primer paso de limpieza antes de entrenar cualquier modelo. Su debilidad es que no detectan interacciones entre variables: una feature que parece inútil por sí sola puede ser muy valiosa junto con otra.
+
+\textbf{Métodos de Envoltura (Wrapper):} Prueban distintos subconjuntos de features entrenando el modelo real en cada iteración. Esto los hace mucho más precisos a la hora de identificar el conjunto óptimo, pero también mucho más costosos computacionalmente. RFE, que se usa en los problemas de esta tarea, pertenece a esta familia. Son recomendables cuando el número de features no es demasiado grande y se quiere exprimir el máximo rendimiento del modelo.
+
+\textbf{Métodos Incrustados (Embedded):} La selección ocurre durante el propio entrenamiento del modelo. Por ejemplo, LASSO penaliza con regularización L1 y fuerza que los coeficientes de features poco relevantes se vuelvan exactamente cero, eliminándolas de forma automática. Los árboles y bosques también pertenecen a esta familia, ya que calculan importancias de features como subproducto del entrenamiento. Son un buen balance entre velocidad y calidad.
+
+\textbf{Métodos No Supervisados:} Se usan cuando no hay variable objetivo. Técnicas como PCA o autoencoders transforman o comprimen el espacio de features para conservar la mayor parte de la información con menos dimensiones. Son los únicos aplicables en problemas puramente exploratorios.
+
+\textbf{Criterio personal:} Mi criterio para elegir entre estos métodos depende principalmente de tres factores: 
+
+\begin{itemize}
+    \item El tamaño del dataset
+    \item El tiempo 
+    \item La interpretabilidad
+\end{itemize}
+
+Cuando se tiene un dataset grande y necesito una limpieza rápida, es mas práctico iniciar con un método de filtrado para descartar las variables claramente irrelevantes. Si después es necesario afinar más la selección y el tiempo lo permite, un método de envoltura como RFE es ideal para encontrar el subconjunto óptimo. Si interpretar qué features son importantes no es prioritario y el modelo ya tiene regularización integrada (como LASSO o RF), los métodos incrustados son buenos porque su eficiencia y no requieren un paso extra. Finalmente, si el problema es no supervisado o simplemente se busca reducir dimensiones sin la preocupacion de conservar las variables originales, entonces se puede optar a PCA.
+
+\textbf{Filtrado} para explorar rápido, \textbf{incrustado} para entrenar eficientemente, \textbf{envoltura} para optimizar a fondo, y \textbf{no supervisado} cuando no hay etiquetas.
 
 \subsection{Conclusión}
 
-% TODO
+No existe un método universalmente superior: cada familia tiene un nicho donde brilla. La clave está en reconocer las restricciones del problema (tamaño de datos, tiempo, necesidad de interpretabilidad) y elegir el método que mejor las satisfaga. En la práctica, estos enfoques no son excluyentes y es común combinarlos: usar un filtrado inicial para reducir el espacio y luego aplicar RFE o un modelo con regularización para afinar la selección final.
+
+A lo largo de esta tarea se optó por métodos de envoltura (RFE con Random Forest como estimador base) y no supervisados (PCA) para la selección y creación de características.
 
 
 % ========================================
