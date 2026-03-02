@@ -1,0 +1,284 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{blue},
+    stringstyle=\color{red},
+    commentstyle=\color{gray},
+    showstringspaces=false,
+    frame=single,
+    breaklines=true
+}
+
+
+
+\title{Reconocimiento de Patrones (ML) - T05}
+\author{ALEJANDRO ZARATE MACIAS}
+\date{2 de Marzo 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Estos ejercicios tienen como objetivo revisar algunos modelos de aprendizaje no supervisado.
+\end{abstract}
+
+
+% ========================================
+% SECCIÓN 1
+% ========================================
+\section{Problema 1}
+
+\subsection{Enunciado}
+
+Lea \cite{featureSelectionMethods} sobre los métodos de la familia de selección de características. Luego, escriba su criterio personal para elegir uno sobre otro.
+
+\subsection{Análisis}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 2
+% ========================================
+\section{Problema 2}
+
+\subsection{Enunciado}
+
+Considere la siguiente función:
+\[
+    f(x, y) = \frac{RMSE(x, y)}{\|x\|_2}, \quad x, y \in \mathbb{R}^n, \quad \|x\|_2 \neq 0.
+\]
+
+Escriba el dominio e imagen de $f$. ¿Cuál es un ``buen'' valor/rango para $f$ de modo que podamos decir que $x$ es muy similar a $y$?
+
+\subsection{Análisis}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 3
+% ========================================
+\section{Problema 3}
+
+\subsection{Enunciado}
+
+Considere el dataset de pronóstico de divorcio \cite{kaggleDivorcePrediction}. A continuación:
+\begin{itemize}
+    \item [a)] Resuelva el problema de clasificación.
+    \item [b)] Identifique las características más relevantes para la clasificación. El objetivo aquí es reducir el número de características empleadas manteniendo una alta precisión de clasificación.
+\end{itemize}
+Anote todos sus supuestos y discuta sus hallazgos.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 4
+% ========================================
+\section{Problema 4}
+
+\subsection{Enunciado}
+
+Repita el problema 3, pero esta vez cree nuevas características. El objetivo es el mismo que antes: reducir el número de características utilizadas manteniendo una alta precisión de clasificación. ¿Fue posible disminuir el número de características usando este enfoque? Anote todos sus supuestos y discuta sus hallazgos.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 5
+% ========================================
+\section{Problema 5}
+
+\subsection{Enunciado}
+
+Repita el problema 3 considerando el problema de pronóstico de precio de automóviles \cite{kaggleCarPricePrediction}.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 6
+% ========================================
+\section{Problema 6}
+
+\subsection{Enunciado}
+
+Repita el problema 4 considerando el problema de pronóstico de precio de automóviles \cite{kaggleCarPricePrediction}.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 7
+% ========================================
+\section{Problema 7}
+
+\subsection{Enunciado}
+
+Utilice los algoritmos K-Means y DBSCAN para realizar compresión de imágenes por colores, como se explica en \cite{imageCompressionKMeans}. Anote todos sus supuestos, haga comparaciones y discuta sus hallazgos.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 8
+% ========================================
+\section{Problema 8}
+
+\subsection{Enunciado}
+
+¿Es K-Means demasiado sensible a los valores atípicos debido al operador de media? Averigüemos:
+\begin{itemize}
+    \item [a)] Construya un dataset con algunos valores atípicos que muestre qué tan sensible es K-Means.
+    \item [b)] Codifique un algoritmo de clustering K-Mediana, que es básicamente K-Means pero usa la mediana en lugar de la media.
+    \item [c)] Aplique su K-Mediana a sus datos. ¿Agrupa mejor?
+\end{itemize}
+Anote todos sus supuestos y discuta sus hallazgos.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% SECCIÓN 9
+% ========================================
+\section{Problema 9}
+
+\subsection{Enunciado}
+
+Considere el problema de predicción de género \cite{kaggleWeightHeightOutlier}. Haga lo siguiente:
+\begin{enumerate}
+    \item Realice un proceso de clustering sobre las características considerando dos clusters. ¿Sus resultados se alinean con las etiquetas conocidas?
+    \item Intente identificar todos los valores atípicos.
+    \item Seleccione algunos datos aleatorios e invierta su etiqueta. Luego, intente identificar todos los valores atípicos. ¿Su método fue capaz de identificar exitosamente los datos invertidos?
+\end{enumerate}
+Anote todos sus supuestos, haga comparaciones y discuta sus hallazgos.
+
+\subsection{Metodología}
+
+% TODO
+
+\subsection{Resultados}
+
+% TODO
+
+\subsection{Discusión}
+
+% TODO
+
+\subsection{Conclusión}
+
+% TODO
+
+
+% ========================================
+% REFERENCIAS
+% ========================================
+\bibliographystyle{plain}
+\bibliography{ref}
+
+\end{document}
