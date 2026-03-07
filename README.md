@@ -45,11 +45,30 @@ El semestre está dividido en **5 tareas** de **20 puntos** cada una, organizada
 │   ├── 📕 t02_alejandro_zarate_macias.pdf
 │   └── 📄 t02_alejandro_zarate_macias.tex
 ├── 📁 T03
-│   └── ⚙️ .gitkeep
+│   ├── 📁 images
+│   │   └── 🖼️ Graficas de resultados
+│   ├── 📕 A3.pdf
+│   ├── 📕 paper_p1.pdf
+│   ├── 📄 ref.bib
+│   ├── 📄 t03_alejandro_zarate_macias.ipynb
+│   ├── 📕 t03_alejandro_zarate_macias.pdf
+│   └── 📄 t03_alejandro_zarate_macias.tex
 ├── 📁 T04
-│   └── ⚙️ .gitkeep
+│   ├── 📁 images
+│   │   └── 🖼️ Graficas de resultados
+│   ├── 📕 A4.pdf
+│   ├── 📄 ref.bib
+│   ├── 📄 t04_alejandro_zarate_macias.ipynb
+│   ├── 📕 t04_alejandro_zarate_macias.pdf
+│   └── 📄 t04_alejandro_zarate_macias.tex
 ├── 📁 T05
-│   └── ⚙️ .gitkeep
+│   ├── 📁 images
+│   │   └── 🖼️ Graficas de resultados
+│   ├── 📕 A5.pdf
+│   ├── 📄 ref.bib
+│   ├── 📄 t05_alejandro_zarate_macias.ipynb
+│   ├── 📕 t05_alejandro_zarate_macias.pdf
+│   └── 📄 t05_alejandro_zarate_macias.tex
 ├── ⚙️ .gitignore
 ├── 📝 README.md
 ├── 🖼️ cucei_udg.png
@@ -72,11 +91,11 @@ Cada carpeta de tarea contiene:
 | Componente | Peso | Calificación |
 |-----------|------|-------------|
 | Tarea 1 | 20 puntos | 15 (75/100) |
-| Tarea 2 | 20 puntos | Pendiente... |
-| Tarea 3 | 20 puntos | Pendiente... |
-| Tarea 4 | 20 puntos | Pendiente... |
+| Tarea 2 | 20 puntos | 16 (79/100) |
+| Tarea 3 | 20 puntos | 19 (94/100) |
+| Tarea 4 | 20 puntos | 19 (98/100) |
 | Tarea 5 | 20 puntos | Pendiente... |
-| **Total** | **100 puntos** | **15 puntos** |
+| **Total** | **100 puntos** | **69 puntos** |
 
 
 ## 📚 Libros de Referencia
@@ -99,9 +118,9 @@ Cada carpeta de tarea contiene:
 |--------|--------|
 | **Semana 01** | [ML 26a Week 1](https://youtube.com/playlist?list=PL66A4_etiRmxlyOSVuqHzYdqeJApEPp5q&si=ZDbC-hFE7PX418k_) |
 | **Semana 02** | [ML 26a Week 2](https://youtube.com/playlist?list=PL66A4_etiRmzL5qg7J95xAmdTMJlVwYAZ&si=fBytrtdx4iXnrgwv) |
-| **Semana 03** | TODO |
-| **Semana 04** | TODO |
-| **Semana 05** | TODO |
+| **Semana 03** | [ML 26a Week 3](https://youtube.com/playlist?list=PL66A4_etiRmwomAqTf4UFrEvkgSBH26vK&si=8wSd4HJO2wfbmDWE) |
+| **Semana 04** | [ML 26a Week 4](https://youtube.com/playlist?list=PL66A4_etiRmw0fXzmOUhTquXM7X2Hv-T4&si=ROuAOL9Czb7P3OG7) |
+| **Semana 05** | [ML 26a Week 5](https://youtube.com/playlist?list=PL66A4_etiRmxUcOgKbgxb6oK1Fce6vS4H&si=ALwjg4cA0eZ66pTO) |
 
 ## 🧰 Herramientas y Bibliotecas
 
@@ -113,6 +132,7 @@ Este curso utiliza las siguientes herramientas de Python para análisis de datos
 - **Pandas**: Manipulación y análisis de datos
 - **Seaborn**: Visualización estadística basada en Matplotlib
 - **Scikit-learn**: Herramientas para aprendizaje automático
+- **ipywidgets**: Interactividad en Jupyter Notebooks
 
 ## 🔗 Repositorio
 
